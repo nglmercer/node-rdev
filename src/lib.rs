@@ -1,86 +1,52 @@
 #![deny(clippy::all)]
 
+pub mod enums;
+pub mod events;
+pub mod conversions;
+
 use napi_derive::napi;
-use napi::{JsFunction, Result};
-use rdev::{listen, EventType, Event};
-use serde_json::{self, json};
-use serde::Serialize;
+use napi::{Result, JsFunction};
+use rdev::listen;
 use std::thread::spawn;
 use napi::threadsafe_function::{ThreadsafeFunction, ErrorStrategy, ThreadsafeFunctionCallMode};
 
-#[derive(Serialize)]
-struct RdevEvent {
-    event_type: String,
-    name: Option<String>,
-    time: std::time::SystemTime,
-    data: String,
+// Re-export the main types for easier access
+pub use enums::{ButtonType, KeyCode, EventTypeValue};
+pub use events::{InputEvent, KeyPressEvent, KeyReleaseEvent, MouseMoveEvent, ButtonPressEvent, ButtonReleaseEvent, WheelEvent, DisplaySize};
+
+/// Get the size of the main display
+#[napi]
+pub fn get_display_size() -> Result<DisplaySize> {
+    let (width, height) = rdev::display_size()
+        .map_err(|e| napi::Error::from_reason(format!("Failed to get display size: {:?}", e)))?;
+    Ok(DisplaySize { width: width as f64, height: height as f64 })
 }
 
-fn deal_event_to_json(event: Event) -> RdevEvent {
-    let mut jsonify_event = RdevEvent {
-        event_type: "".to_string(),
-        name: event.name,
-        time: event.time,
-        data: "".to_string(),
-    };
-    match event.event_type {
-        EventType::KeyPress(key) => {
-            jsonify_event.event_type = "KeyPress".to_string();
-            jsonify_event.data = json!({
-                "key": format!("{:?}", key)
-            }).to_string();
-        }
-        EventType::KeyRelease(key) => {
-            jsonify_event.event_type = "KeyRelease".to_string();
-            jsonify_event.data = json!({
-                "key": format!("{:?}", key)
-            }).to_string();
-        }
-        EventType::MouseMove { x, y } => {
-            jsonify_event.event_type = "MouseMove".to_string();
-            jsonify_event.data = json!({
-                "x": x,
-                "y": y
-            }).to_string();
-        }
-        EventType::ButtonPress(key) => {
-            jsonify_event.event_type = "ButtonPress".to_string();
-            jsonify_event.data = json!({
-                "key": format!("{:?}", key)
-            }).to_string();
-        }
-        EventType::ButtonRelease(key) => {
-            jsonify_event.event_type = "ButtonRelease".to_string();
-            jsonify_event.data = json!({
-                "key": format!("{:?}", key)
-            }).to_string();
-        }
-        EventType::Wheel { delta_x, delta_y } => {
-            jsonify_event.event_type = "Wheel".to_string();
-            jsonify_event.data = json!({
-                "delta_x": delta_x,
-                "delta_y": delta_y
-            }).to_string();
-        }
-    }
-
-    jsonify_event
-}
-
-#[napi(ts_args_type = "callback: (event: string) => void")]
-pub fn startListener(callback: JsFunction) -> Result<()> {
-    let jsfn: ThreadsafeFunction<String, ErrorStrategy::Fatal> =
+/// Start listening for input events
+#[napi(ts_args_type = "callback: (event: InputEvent) => void")]
+pub fn start_listener(callback: JsFunction) -> Result<()> {
+    let jsfn: ThreadsafeFunction<InputEvent, ErrorStrategy::Fatal> =
         callback.create_threadsafe_function(0, |ctx| Ok(vec![ctx.value]))?;
-    spawn(|| {
+    
+    spawn(move || {
         if let Err(error) = listen(move |event| {
-            let event = deal_event_to_json(event);
-            jsfn.call(
-                serde_json::to_string(&event).unwrap(),
-                ThreadsafeFunctionCallMode::NonBlocking,
-            );
+            let event: InputEvent = event.into();
+            jsfn.call(event, ThreadsafeFunctionCallMode::NonBlocking);
         }) {
-            println!("Error: {:?}", error);
+            eprintln!("Error: {:?}", error);
         }
     });
+    
+    Ok(())
+}
+
+/// Simulate an input event
+#[napi]
+pub fn simulate_event(event: InputEvent) -> Result<()> {
+    let rdev_event: rdev::Event = event.try_into()
+        .map_err(|e| napi::Error::from_reason(format!("Invalid event data: {}", e)))?;
+    rdev::simulate(&rdev_event.event_type).map_err(|e| {
+        napi::Error::from_reason(format!("Failed to simulate event: {:?}", e))
+    })?;
     Ok(())
 }

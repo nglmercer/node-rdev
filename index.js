@@ -208,12 +208,62 @@ switch (platform) {
         }
         break
       case 'arm':
-        localFileExisted = existsSync(join(__dirname, 'node-rdev.linux-arm-gnueabihf.node'))
+        if (isMusl()) {
+          localFileExisted = existsSync(join(__dirname, 'node-rdev.linux-arm-musleabihf.node'))
+          try {
+            if (localFileExisted) {
+              nativeBinding = require('./node-rdev.linux-arm-musleabihf.node')
+            } else {
+              nativeBinding = require('node-rdev-linux-arm-musleabihf')
+            }
+          } catch (e) {
+            loadError = e
+          }
+        } else {
+          localFileExisted = existsSync(join(__dirname, 'node-rdev.linux-arm-gnueabihf.node'))
+          try {
+            if (localFileExisted) {
+              nativeBinding = require('./node-rdev.linux-arm-gnueabihf.node')
+            } else {
+              nativeBinding = require('node-rdev-linux-arm-gnueabihf')
+            }
+          } catch (e) {
+            loadError = e
+          }
+        }
+        break
+      case 'riscv64':
+        if (isMusl()) {
+          localFileExisted = existsSync(join(__dirname, 'node-rdev.linux-riscv64-musl.node'))
+          try {
+            if (localFileExisted) {
+              nativeBinding = require('./node-rdev.linux-riscv64-musl.node')
+            } else {
+              nativeBinding = require('node-rdev-linux-riscv64-musl')
+            }
+          } catch (e) {
+            loadError = e
+          }
+        } else {
+          localFileExisted = existsSync(join(__dirname, 'node-rdev.linux-riscv64-gnu.node'))
+          try {
+            if (localFileExisted) {
+              nativeBinding = require('./node-rdev.linux-riscv64-gnu.node')
+            } else {
+              nativeBinding = require('node-rdev-linux-riscv64-gnu')
+            }
+          } catch (e) {
+            loadError = e
+          }
+        }
+        break
+      case 's390x':
+        localFileExisted = existsSync(join(__dirname, 'node-rdev.linux-s390x-gnu.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./node-rdev.linux-arm-gnueabihf.node')
+            nativeBinding = require('./node-rdev.linux-s390x-gnu.node')
           } else {
-            nativeBinding = require('node-rdev-linux-arm-gnueabihf')
+            nativeBinding = require('node-rdev-linux-s390x-gnu')
           }
         } catch (e) {
           loadError = e
@@ -234,6 +284,11 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { startListener } = nativeBinding
+const { ButtonType, KeyCode, EventTypeValue, getDisplaySize, startListener, simulateEvent } = nativeBinding
 
+module.exports.ButtonType = ButtonType
+module.exports.KeyCode = KeyCode
+module.exports.EventTypeValue = EventTypeValue
+module.exports.getDisplaySize = getDisplaySize
 module.exports.startListener = startListener
+module.exports.simulateEvent = simulateEvent
