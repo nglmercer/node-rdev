@@ -27,6 +27,7 @@
   },
   "include": [
     "tests/**/*.ts",
+    "examples/**/*.ts",
   ],
   "exclude": [
     "node_modules",

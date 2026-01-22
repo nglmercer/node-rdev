@@ -2,6 +2,7 @@
   "name": "node-rdev",
   "version": "1.0.0",
   "description": "node version of rdev",
+  "type": "module",
   "main": "index.js",
   "repository": "https://github.com/Barrierml/node-rdev",
   "license": "MIT",
@@ -53,7 +54,7 @@
     "format:prettier": "prettier . -w",
     "format:toml": "taplo format",
     "format:rs": "cargo fmt",
-    "lint": "eslint . -c ./.eslintrc.yml",
+    "lint": "eslint .",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "bun test",
     "version": "napi version"
@@ -74,7 +75,7 @@
   },
   "lint-staged": {
     "*.@(js|ts|tsx)": [
-      "eslint -c .eslintrc.yml --fix"
+      "eslint --fix"
     ],
     "*.@(js|ts|tsx|yml|yaml|md|json)": [
       "prettier --write"
