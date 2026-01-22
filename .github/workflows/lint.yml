@@ -17,22 +17,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: 20
-          cache: 'yarn'
+          bun-version: latest
 
-      - name: Install
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
 
-      - name: Install dependencies
-        run: yarn install
-
       - name: ESLint
-        run: yarn lint
+        run: bun lint
 
       - name: Cargo fmt
         run: cargo fmt -- --check
