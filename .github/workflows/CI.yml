@@ -42,7 +42,9 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: bun run build --target x86_64-unknown-linux-gnu
+            build: |
+              apt-get update && apt-get install -y libx11-dev libxtst-dev
+              bun run build --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
@@ -58,7 +60,7 @@ jobs:
             target: armv7-unknown-linux-gnueabihf
             setup: |
               sudo apt-get update
-              sudo apt-get install gcc-arm-linux-gnueabihf -y
+              sudo apt-get install -y gcc-arm-linux-gnueabihf libx11-dev libxtst-dev
             build: |
               bun run build --target armv7-unknown-linux-gnueabihf
           - host: ubuntu-latest

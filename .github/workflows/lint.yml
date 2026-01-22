@@ -17,7 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libxtst-dev
+
+      - name: Setup Bun 
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
