@@ -22,22 +22,23 @@
     "node-rdev.darwin-arm64.node",
     "node-rdev.darwin-x64.node",
     "node-rdev.win32-x64-msvc.node",
+    "node-rdev.win32-ia32-msvc.node",
     "node-rdev.win32-arm64-msvc.node"
   ],
   "napi": {
     "binaryName": "node-rdev",
     "targets": [
-        "x86_64-unknown-linux-musl",
-        "aarch64-unknown-linux-gnu",
-        "i686-pc-windows-msvc",
-        "armv7-unknown-linux-gnueabihf",
-        "aarch64-apple-darwin",
-        "aarch64-linux-android",
-        "x86_64-unknown-freebsd",
-        "aarch64-unknown-linux-musl",
-        "aarch64-pc-windows-msvc",
-        "armv7-linux-androideabi"
-      ]
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "i686-pc-windows-msvc",
+      "armv7-unknown-linux-gnueabihf",
+      "aarch64-apple-darwin",
+      "aarch64-linux-android",
+      "x86_64-unknown-freebsd",
+      "aarch64-unknown-linux-musl",
+      "aarch64-pc-windows-msvc",
+      "armv7-linux-androideabi"
+    ]
   },
   "engines": {
     "node": ">= 10"
