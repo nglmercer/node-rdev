@@ -6,7 +6,7 @@ env:
 permissions:
   contents: write
   id-token: write
-'on':
+on:
   push:
     branches:
       - main
@@ -30,85 +30,60 @@ jobs:
       fail-fast: false
       matrix:
         settings:
+          # MacOS
           - host: macos-latest
             target: x86_64-apple-darwin
             build: bun run build --target x86_64-apple-darwin
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: bun run build --target aarch64-apple-darwin
+
+          # Windows
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             build: bun run build --target x86_64-pc-windows-msvc
           - host: windows-latest
-            target: i686-pc-windows-msvc
-            build: |
-              bun run build --target i686-pc-windows-msvc
-              bun test
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: |
-              apt-get update && apt-get install -y unzip libx11-dev libxtst-dev curl
-              curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-              apt-get install -y nodejs
-              rustup update stable
-              curl -fsSL https://bun.sh/install | bash
-              export PATH="$HOME/.bun/bin:$PATH"
-              bun install
-              bun run build --target x86_64-unknown-linux-gnu
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-            build: |
-              apk add --no-cache bash curl unzip libstdc++ nodejs npm
-              rustup update stable
-              curl -fsSL https://bun.sh/install | bash
-              export PATH="$HOME/.bun/bin:$PATH"
-              bun install
-              bun run build --target x86_64-unknown-linux-musl
-          - host: macos-latest
-            target: aarch64-apple-darwin
-            build: bun run build --target aarch64-apple-darwin
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
-            build: |
-              apt-get update && apt-get install -y unzip curl
-              curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-              apt-get install -y nodejs
-              rustup update stable
-              curl -fsSL https://bun.sh/install | bash
-              export PATH="$HOME/.bun/bin:$PATH"
-              bun install
-              bun run build --target aarch64-unknown-linux-gnu
-          - host: ubuntu-latest
-            target: armv7-unknown-linux-gnueabihf
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: |
-              dpkg --add-architecture armhf
-              apt-get update
-              apt-get install -y curl unzip gcc-arm-linux-gnueabihf libx11-dev:armhf libxtst-dev:armhf
-              curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-              apt-get install -y nodejs
-              rustup target add armv7-unknown-linux-gnueabihf
-              rustup update stable
-              curl -fsSL https://bun.sh/install | bash
-              export PATH="$HOME/.bun/bin:$PATH"
-              export PKG_CONFIG_ALLOW_CROSS=1
-              export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
-              bun install
-              bun run build --target armv7-unknown-linux-gnueabihf
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-musl
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-            build: |
-              apk add --no-cache bash curl libstdc++ unzip nodejs npm
-              rustup update stable
-              rustup target add aarch64-unknown-linux-musl
-              curl -fsSL https://bun.sh/install | bash
-              export PATH="$HOME/.bun/bin:$PATH"
-              bun install
-              bun run build --target aarch64-unknown-linux-musl
-          - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: bun run build --target aarch64-pc-windows-msvc
+
+          # Linux Native (x64) - NO DOCKER
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            build: |
+              sudo apt-get update
+              sudo apt-get install -y libx11-dev libxtst-dev pkg-config
+              bun run build --target x86_64-unknown-linux-gnu
+
+          # Linux ARM (aarch64) - ZIG + NO DOCKER
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            zig: true
+            build: |
+              # 1. Add ARM architecture to apt
+              sudo dpkg --add-architecture arm64
+              sudo apt-get update
+
+              # 2. Install ARM versions of X11 libs
+              sudo apt-get install -y libx11-dev:arm64 libxtst-dev:arm64 pkg-config
+
+              # 3. Point pkg-config to the ARM libs
+              export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
+
+              # 4. Build using Zig
+              yarn napi build --target aarch64-unknown-linux-gnu --cargo-name cargo-zigbuild --release
+
+          # Linux ARMv7 (armhf) - ZIG + NO DOCKER
+          - host: ubuntu-latest
+            target: armv7-unknown-linux-gnueabihf
+            zig: true
+            build: |
+              sudo dpkg --add-architecture armhf
+              sudo apt-get update
+              sudo apt-get install -y libx11-dev:armhf libxtst-dev:armhf pkg-config
+
+              export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
+
+              yarn napi build --target armv7-unknown-linux-gnueabihf --cargo-name cargo-zigbuild --release
 
     name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
@@ -117,16 +92,26 @@ jobs:
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
-        if: ${{ !matrix.settings.docker }}
         with:
           bun-version: latest
 
+      # Install Zig if the matrix job requested it
+      - name: Setup Zig
+        if: ${{ matrix.settings.zig }}
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        if: ${{ !matrix.settings.docker }}
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
+
+      # Install cargo-zigbuild if needed
+      - name: Install cargo-zigbuild
+        if: ${{ matrix.settings.zig }}
+        run: cargo install cargo-zigbuild
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -140,19 +125,9 @@ jobs:
           key: ${{ matrix.settings.target }}-cargo-${{ matrix.settings.host }}
 
       - name: Install dependencies
-        if: ${{ !matrix.settings.docker }}
         run: bun install
 
-      - name: Build in docker
-        uses: addnab/docker-run-action@v3
-        if: ${{ matrix.settings.docker }}
-        with:
-          image: ${{ matrix.settings.docker }}
-          options: '--user 0:0 -v ${{ github.workspace }}:/build -w /build'
-          run: ${{ matrix.settings.build }}
-
       - name: Build
-        if: ${{ !matrix.settings.docker }}
         run: ${{ matrix.settings.build }}
         shell: bash
 
