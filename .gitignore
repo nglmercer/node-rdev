@@ -127,3 +127,4 @@ Cargo.lock
 !.yarn/versions
 
 .history
+bun.lock

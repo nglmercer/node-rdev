@@ -1,14 +1,37 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "strict": true,
-    "moduleResolution": "node",
-    "module": "CommonJS",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "removeComments": true,
+    "sourceMap": false,
+    "outDir": "./dist",
+    "lib": ["ES2022"],
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+    },
   },
-  "include": ["."],
-  "exclude": ["node_modules"]
+  "include": [
+    "tests/**/*.ts",
+  ],
+  "exclude": [
+    "node_modules",
+    "target",
+    "dist",
+    "build",
+  ],
 }
