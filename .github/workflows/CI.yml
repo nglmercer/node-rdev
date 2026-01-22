@@ -46,6 +46,11 @@ jobs:
             target: aarch64-pc-windows-msvc
             build: bun run build --target aarch64-pc-windows-msvc
 
+          # Windows (32-bit) - Added based on package.json files list
+          - host: windows-latest
+            target: i686-pc-windows-msvc
+            build: bun run build --target i686-pc-windows-msvc
+
           # Linux Native (x64) - NO DOCKER
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
@@ -59,17 +64,26 @@ jobs:
             target: aarch64-unknown-linux-gnu
             zig: true
             build: |
-              # 1. Add ARM architecture to apt
+              # 1. Add ARM architecture
               sudo dpkg --add-architecture arm64
+
+              # 2. Fix Apt Sources:
+              # Mark existing sources as amd64 only to prevent 404s on arm64 looking at azure mirrors
+              sudo sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list
+              sudo sed -i 's/deb mirror/deb [arch=amd64] mirror/' /etc/apt/sources.list
+              # Add ubuntu ports for arm64
+              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
+              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
+
               sudo apt-get update
 
-              # 2. Install ARM versions of X11 libs
+              # 3. Install ARM versions of X11 libs
               sudo apt-get install -y libx11-dev:arm64 libxtst-dev:arm64 pkg-config
 
-              # 3. Point pkg-config to the ARM libs
+              # 4. Point pkg-config to the ARM libs
               export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
 
-              # 4. Build using Zig
+              # 5. Build using Zig
               yarn napi build --target aarch64-unknown-linux-gnu --cargo-name cargo-zigbuild --release
 
           # Linux ARMv7 (armhf) - ZIG + NO DOCKER
@@ -78,12 +92,35 @@ jobs:
             zig: true
             build: |
               sudo dpkg --add-architecture armhf
+
+              # Fix Apt Sources for armhf
+              sudo sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list
+              sudo sed -i 's/deb mirror/deb [arch=amd64] mirror/' /etc/apt/sources.list
+              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
+              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
+
               sudo apt-get update
               sudo apt-get install -y libx11-dev:armhf libxtst-dev:armhf pkg-config
 
               export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
 
               yarn napi build --target armv7-unknown-linux-gnueabihf --cargo-name cargo-zigbuild --release
+
+          # Linux Musl (x64) - ZIG
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            zig: true
+            build: |
+              sudo apt-get update
+              sudo apt-get install -y libx11-dev libxtst-dev pkg-config
+              yarn napi build --target x86_64-unknown-linux-musl --cargo-name cargo-zigbuild --release
+
+          # Linux Musl (aarch64) - ZIG
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            zig: true
+            build: |
+              yarn napi build --target aarch64-unknown-linux-musl --cargo-name cargo-zigbuild --release
 
     name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
@@ -161,17 +198,6 @@ jobs:
             curl https://sh.rustup.rs -sSf --output rustup.sh
             sh rustup.sh -y --profile minimal --default-toolchain beta
             source "$HOME/.cargo/env"
-            echo "~~~~ rustc --version ~~~~"
-            rustc --version
-            echo "~~~~ node -v ~~~~"
-            node -v
-            echo "~~~~ bun --version ~~~~"
-            bun --version
-            pwd
-            ls -lah
-            whoami
-            env
-            freebsd-version
             bun install
             bun run build
             rm -rf node_modules
