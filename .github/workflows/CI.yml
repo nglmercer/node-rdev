@@ -46,12 +46,12 @@ jobs:
             target: aarch64-pc-windows-msvc
             build: bun run build --target aarch64-pc-windows-msvc
 
-          # Windows (32-bit) - Added based on package.json files list
+          # Windows (32-bit)
           - host: windows-latest
             target: i686-pc-windows-msvc
             build: bun run build --target i686-pc-windows-msvc
 
-          # Linux Native (x64) - NO DOCKER
+          # Linux Native (x64)
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             build: |
@@ -59,68 +59,45 @@ jobs:
               sudo apt-get install -y libx11-dev libxtst-dev pkg-config
               bun run build --target x86_64-unknown-linux-gnu
 
-          # Linux ARM (aarch64) - ZIG + NO DOCKER
+          # Linux ARM (aarch64) - ZIG
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             zig: true
             build: |
-              # 1. Add ARM architecture
-              sudo dpkg --add-architecture arm64
+              # Configure Zig as the C/C++ compiler and linker
+              export CC="zig cc -target aarch64-linux-gnu"
+              export CXX="zig c++ -target aarch64-linux-gnu"
+              yarn napi build --target aarch64-unknown-linux-gnu --release
 
-              # 2. Fix Apt Sources:
-              # Mark existing sources as amd64 only to prevent 404s on arm64 looking at azure mirrors
-              sudo sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list
-              sudo sed -i 's/deb mirror/deb [arch=amd64] mirror/' /etc/apt/sources.list
-              # Add ubuntu ports for arm64
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
-              echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
-
-              sudo apt-get update
-
-              # 3. Install ARM versions of X11 libs
-              sudo apt-get install -y libx11-dev:arm64 libxtst-dev:arm64 pkg-config
-
-              # 4. Point pkg-config to the ARM libs
-              export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
-
-              # 5. Build using Zig
-              yarn napi build --target aarch64-unknown-linux-gnu --cargo-name cargo-zigbuild --release
-
-          # Linux ARMv7 (armhf) - ZIG + NO DOCKER
+          # Linux ARMv7 (armhf) - ZIG
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             zig: true
             build: |
-              sudo dpkg --add-architecture armhf
-
-              # Fix Apt Sources for armhf
-              sudo sed -i 's/deb http/deb [arch=amd64] http/' /etc/apt/sources.list
-              sudo sed -i 's/deb mirror/deb [arch=amd64] mirror/' /etc/apt/sources.list
-              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs) main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
-              echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -cs)-updates main multiverse universe restricted" | sudo tee -a /etc/apt/sources.list
-
-              sudo apt-get update
-              sudo apt-get install -y libx11-dev:armhf libxtst-dev:armhf pkg-config
-
-              export PKG_CONFIG_PATH=/usr/lib/arm-linux-gnueabihf/pkgconfig
-
-              yarn napi build --target armv7-unknown-linux-gnueabihf --cargo-name cargo-zigbuild --release
+              # Configure Zig as the C/C++ compiler and linker
+              export CC="zig cc -target arm-linux-gnueabihf"
+              export CXX="zig c++ -target arm-linux-gnueabihf"
+              yarn napi build --target armv7-unknown-linux-gnueabihf --release
 
           # Linux Musl (x64) - ZIG
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             zig: true
             build: |
-              sudo apt-get update
-              sudo apt-get install -y libx11-dev libxtst-dev pkg-config
-              yarn napi build --target x86_64-unknown-linux-musl --cargo-name cargo-zigbuild --release
+              # Configure Zig as the C/C++ compiler and linker
+              export CC="zig cc -target x86_64-linux-musl"
+              export CXX="zig c++ -target x86_64-linux-musl"
+              yarn napi build --target x86_64-unknown-linux-musl --release
 
           # Linux Musl (aarch64) - ZIG
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             zig: true
             build: |
-              yarn napi build --target aarch64-unknown-linux-musl --cargo-name cargo-zigbuild --release
+              # Configure Zig as the C/C++ compiler and linker
+              export CC="zig cc -target aarch64-linux-musl"
+              export CXX="zig c++ -target aarch64-linux-musl"
+              yarn napi build --target aarch64-unknown-linux-musl --release
 
     name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
@@ -144,11 +121,6 @@ jobs:
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
-
-      # Install cargo-zigbuild if needed
-      - name: Install cargo-zigbuild
-        if: ${{ matrix.settings.zig }}
-        run: cargo install cargo-zigbuild
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -174,6 +146,7 @@ jobs:
           name: bindings-${{ matrix.settings.target }}
           path: ${{ env.APP_NAME }}.*.node
           if-no-files-found: error
+  
   build-freebsd:
     runs-on: macos-13
     name: Build FreeBSD
@@ -209,6 +182,7 @@ jobs:
           name: bindings-freebsd
           path: ${{ env.APP_NAME }}.*.node
           if-no-files-found: error
+
   test-macOS-windows-binding:
     name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
@@ -249,6 +223,7 @@ jobs:
         shell: bash
       - name: Test bindings
         run: bun test
+
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
     needs:
@@ -278,6 +253,7 @@ jobs:
         shell: bash
       - name: Test bindings
         run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim bun test
+
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -309,6 +285,7 @@ jobs:
         shell: bash
       - name: Test bindings
         run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine bun test
+
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
@@ -349,6 +326,7 @@ jobs:
             set -e
             bun test
             ls -la
+
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@lts
     needs:
@@ -382,6 +360,7 @@ jobs:
           run: |
             set -e
             yarn test
+
   test-linux-arm-gnueabihf-binding:
     name: Test bindings on armv7-unknown-linux-gnueabihf - node@${{ matrix.node }}
     needs:
@@ -421,6 +400,7 @@ jobs:
             set -e
             bun test
             ls -la
+
   publish:
     name: Publish
     runs-on: ubuntu-latest
