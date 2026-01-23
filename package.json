@@ -59,6 +59,7 @@
     "prepublishOnly": "napi prepublish -t npm",
     "test": "bun test",
     "test:node": "node --test tests/node-test.cjs",
+    "test:binding": "node --test tests/binding.test.cjs",
     "version": "napi version"
   },
   "devDependencies": {
