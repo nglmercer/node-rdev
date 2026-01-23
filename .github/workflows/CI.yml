@@ -66,13 +66,18 @@ jobs:
             build: |
               # Download ARM64 X11 libs manually to avoid apt/dpkg issues
               python3 -c "
-              import urllib.request, gzip, os
+              import urllib.request, gzip, os, sys
               arch = 'arm64'
               mirror = 'http://ports.ubuntu.com/ubuntu-ports'
-              dist = 'noble'
-              pkgs = {'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 'libxau-dev', 'libxdmcp-dev'}
+              dist = 'jammy'
+              pkgs = {
+                  'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 
+                  'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 
+                  'libxau-dev', 'libxdmcp-dev', 'xtrans-dev', 'libpthread-stubs0-dev',
+                  'libxfixes-dev', 'libxrender-dev'
+              }
               os.makedirs('sysroot', exist_ok=True)
-              print('Scanning Packages...')
+              print(f'Scanning Packages for {dist}-{arch}...')
               for comp in ['main', 'universe']:
                   try:
                       with urllib.request.urlopen(f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz') as r:
@@ -83,18 +88,20 @@ jobs:
                           if line.startswith('Filename: ') and curr in pkgs:
                               url = f'{mirror}/{line.split(\": \")[1]}'
                               print(f'Downloading {curr}...')
-                              os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb')
+                              if os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb') != 0:
+                                  print(f'Failed to download {curr}')
+                                  sys.exit(1)
                   except Exception as e: print(f'Error: {e}')
               "
 
               # Configure Env
               export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
-              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig
+              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
               export PKG_CONFIG_ALLOW_CROSS=1
               export CC="zig cc -target aarch64-linux-gnu"
               export CXX="zig c++ -target aarch64-linux-gnu"
               
-              yarn napi build --target aarch64-unknown-linux-gnu --release
+              bun run build --target aarch64-unknown-linux-gnu
 
           # Linux ARMv7 (armhf) - ZIG + Manual Sysroot
           - host: ubuntu-latest
@@ -103,13 +110,18 @@ jobs:
             build: |
               # Download ARMHF X11 libs manually
               python3 -c "
-              import urllib.request, gzip, os
+              import urllib.request, gzip, os, sys
               arch = 'armhf'
               mirror = 'http://ports.ubuntu.com/ubuntu-ports'
-              dist = 'noble'
-              pkgs = {'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 'libxau-dev', 'libxdmcp-dev'}
+              dist = 'jammy'
+              pkgs = {
+                  'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 
+                  'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 
+                  'libxau-dev', 'libxdmcp-dev', 'xtrans-dev', 'libpthread-stubs0-dev',
+                  'libxfixes-dev', 'libxrender-dev'
+              }
               os.makedirs('sysroot', exist_ok=True)
-              print('Scanning Packages...')
+              print(f'Scanning Packages for {dist}-{arch}...')
               for comp in ['main', 'universe']:
                   try:
                       with urllib.request.urlopen(f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz') as r:
@@ -120,18 +132,20 @@ jobs:
                           if line.startswith('Filename: ') and curr in pkgs:
                               url = f'{mirror}/{line.split(\": \")[1]}'
                               print(f'Downloading {curr}...')
-                              os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb')
+                              if os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb') != 0:
+                                  print(f'Failed to download {curr}')
+                                  sys.exit(1)
                   except Exception as e: print(f'Error: {e}')
               "
 
               # Configure Env
               export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
-              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig
+              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
               export PKG_CONFIG_ALLOW_CROSS=1
               export CC="zig cc -target arm-linux-gnueabihf"
               export CXX="zig c++ -target arm-linux-gnueabihf"
 
-              yarn napi build --target armv7-unknown-linux-gnueabihf --release
+              bun run build --target armv7-unknown-linux-gnueabihf
 
           # Linux Musl (x64) - ZIG
           - host: ubuntu-latest
@@ -146,22 +160,27 @@ jobs:
               export CC="zig cc -target x86_64-linux-musl"
               export CXX="zig c++ -target x86_64-linux-musl"
               
-              yarn napi build --target x86_64-unknown-linux-musl --release
+              bun run build --target x86_64-unknown-linux-musl
 
           # Linux Musl (aarch64) - ZIG
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             zig: true
             build: |
-              # Download ARM64 X11 libs (using glibc libs for musl build is hacky but often works for client libs headers)
+              # Download ARM64 X11 libs
               python3 -c "
-              import urllib.request, gzip, os
+              import urllib.request, gzip, os, sys
               arch = 'arm64'
               mirror = 'http://ports.ubuntu.com/ubuntu-ports'
-              dist = 'noble'
-              pkgs = {'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 'libxau-dev', 'libxdmcp-dev'}
+              dist = 'jammy'
+              pkgs = {
+                  'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 
+                  'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 
+                  'libxau-dev', 'libxdmcp-dev', 'xtrans-dev', 'libpthread-stubs0-dev',
+                  'libxfixes-dev'
+              }
               os.makedirs('sysroot', exist_ok=True)
-              print('Scanning Packages...')
+              print(f'Scanning Packages for {dist}-{arch}...')
               for comp in ['main', 'universe']:
                   try:
                       with urllib.request.urlopen(f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz') as r:
@@ -172,17 +191,19 @@ jobs:
                           if line.startswith('Filename: ') and curr in pkgs:
                               url = f'{mirror}/{line.split(\": \")[1]}'
                               print(f'Downloading {curr}...')
-                              os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb')
+                              if os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb') != 0:
+                                  print(f'Failed to download {curr}')
+                                  sys.exit(1)
                   except Exception as e: print(f'Error: {e}')
               "
               
               export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
-              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig
+              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
               export PKG_CONFIG_ALLOW_CROSS=1
               export CC="zig cc -target aarch64-linux-musl"
               export CXX="zig c++ -target aarch64-linux-musl"
               
-              yarn napi build --target aarch64-unknown-linux-musl --release
+              bun run build --target aarch64-unknown-linux-musl
 
     name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
