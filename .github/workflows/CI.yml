@@ -56,7 +56,7 @@ jobs:
             target: x86_64-unknown-linux-gnu
             build: |
               sudo apt-get update
-              sudo apt-get install -y libx11-dev libxtst-dev pkg-config
+              sudo apt-get install -y libx11-dev libxtst-dev libxi-dev libxext-dev libxfixes-dev libxrender-dev pkg-config
               bun run build --target x86_64-unknown-linux-gnu
 
     name: stable - ${{ matrix.settings.target }}
@@ -312,7 +312,7 @@ jobs:
         run: |
           docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim bash -c '
             set -e
-            apt-get update && apt-get install -y curl unzip
+            apt-get update && apt-get install -y curl unzip libx11-6 libxtst6 libxi6 libxext6 libxfixes3 libxrender1
             curl -fsSL https://bun.sh/install | bash
             export BUN_INSTALL="$HOME/.bun"
             export PATH="$BUN_INSTALL/bin:$PATH"
@@ -338,7 +338,6 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: |
-          bun config set supportedArchitectures.libc "musl"
           bun install
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -352,7 +351,7 @@ jobs:
         run: |
           docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine sh -c '
             set -e
-            apk add --no-cache bash curl unzip
+            apk add --no-cache bash curl unzip libxtst libx11 libxi libxext libxfixes libxrender
             curl -fsSL https://bun.sh/install | bash
             export BUN_INSTALL="$HOME/.bun"
             export PATH="$BUN_INSTALL/bin:$PATH"
@@ -392,7 +391,7 @@ jobs:
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
             set -e
-            apt-get update && apt-get install -y curl unzip
+            apt-get update && apt-get install -y curl unzip libx11-6 libxtst6 libxi6 libxext6 libxfixes3 libxrender1
             curl -fsSL https://bun.sh/install | bash
             export BUN_INSTALL="$HOME/.bun"
             export PATH="$BUN_INSTALL/bin:$PATH"
@@ -432,10 +431,10 @@ jobs:
           image: node:${{ matrix.node }}-bullseye-slim
           options: '--platform linux/arm/v7 -v ${{ github.workspace }}:/build -w /build'
           run: |
-            set -e
+            apt-get update && apt-get install -y libx11-6 libxtst6 libxi6 libxext6 libxfixes3 libxrender1
             # Bun is not available for ARM32, use npm instead
             npm install
-            npm test
+            npm run test:node
             ls -la
 
   publish:
