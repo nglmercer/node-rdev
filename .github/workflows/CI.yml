@@ -122,7 +122,7 @@ jobs:
               
               # Install build dependencies
               apt-get update
-              apt-get install -y curl build-essential pkg-config \
+              apt-get install -y curl unzip build-essential pkg-config \
                 libx11-dev libxtst-dev libxi-dev \
                 libxext-dev libxfixes-dev libxrender-dev
               
@@ -169,7 +169,7 @@ jobs:
               
               # Install build dependencies
               apt-get update
-              apt-get install -y curl build-essential pkg-config \
+              apt-get install -y curl unzip build-essential pkg-config \
                 libx11-dev libxtst-dev libxi-dev \
                 libxext-dev libxfixes-dev libxrender-dev
               
@@ -206,7 +206,7 @@ jobs:
       - name: Install build dependencies
         run: |
           apk add --no-cache \
-            bash curl git python3 \
+            bash curl git python3 unzip \
             build-base musl-dev \
             libx11-dev libxtst-dev libxi-dev \
             libxext-dev libxfixes-dev libxrender-dev \
@@ -269,7 +269,7 @@ jobs:
               
               # Install build dependencies
               apk add --no-cache \
-                bash curl git python3 \
+                bash curl git python3 unzip \
                 build-base musl-dev \
                 libx11-dev libxtst-dev libxi-dev \
                 libxext-dev libxfixes-dev libxrender-dev \
@@ -284,14 +284,10 @@ jobs:
               curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
               source $HOME/.cargo/env
               
-              # Configure cargo to use native cc for musl target
-              mkdir -p .cargo
-              echo "[target.aarch64-unknown-linux-musl]" > .cargo/config.toml
-              echo "linker = \"cc\"" >> .cargo/config.toml
-              
               # Install dependencies and build
+              # No --target needed - native target is already aarch64-unknown-linux-musl
               bun install
-              bun run build --target aarch64-unknown-linux-musl
+              bun run build
             '
 
       - name: Upload artifact
