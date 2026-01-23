@@ -98,8 +98,10 @@ jobs:
               export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
               export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
               export PKG_CONFIG_ALLOW_CROSS=1
+              
               export CC="zig cc -target aarch64-linux-gnu"
               export CXX="zig c++ -target aarch64-linux-gnu"
+              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER="zig cc -target aarch64-linux-gnu"
               
               bun run build --target aarch64-unknown-linux-gnu
 
@@ -142,8 +144,10 @@ jobs:
               export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
               export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
               export PKG_CONFIG_ALLOW_CROSS=1
+              
               export CC="zig cc -target arm-linux-gnueabihf"
               export CXX="zig c++ -target arm-linux-gnueabihf"
+              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER="zig cc -target arm-linux-gnueabihf"
 
               bun run build --target armv7-unknown-linux-gnueabihf
 
@@ -159,6 +163,7 @@ jobs:
               export PKG_CONFIG_ALLOW_CROSS=1
               export CC="zig cc -target x86_64-linux-musl"
               export CXX="zig c++ -target x86_64-linux-musl"
+              export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER="zig cc -target x86_64-linux-musl"
               
               bun run build --target x86_64-unknown-linux-musl
 
@@ -200,8 +205,10 @@ jobs:
               export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
               export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
               export PKG_CONFIG_ALLOW_CROSS=1
+              
               export CC="zig cc -target aarch64-linux-musl"
               export CXX="zig c++ -target aarch64-linux-musl"
+              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="zig cc -target aarch64-linux-musl"
               
               bun run build --target aarch64-unknown-linux-musl
 
