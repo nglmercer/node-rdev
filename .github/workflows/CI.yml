@@ -168,23 +168,21 @@ jobs:
               set -e
               
               # Install build dependencies
+              # Note: Bun does NOT support ARM32, so we use npm instead
               apt-get update
-              apt-get install -y curl unzip build-essential pkg-config \
+              apt-get install -y curl build-essential pkg-config \
                 libx11-dev libxtst-dev libxi-dev \
                 libxext-dev libxfixes-dev libxrender-dev
-              
-              # Install Bun
-              curl -fsSL https://bun.sh/install | bash
-              export BUN_INSTALL="$HOME/.bun"
-              export PATH="$BUN_INSTALL/bin:$PATH"
               
               # Install Rust
               curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
               source $HOME/.cargo/env
               
-              # Install dependencies and build
-              $HOME/.bun/bin/bun install
-              $HOME/.bun/bin/bun run build --target armv7-unknown-linux-gnueabihf
+              # Install dependencies using npm (bun not available on ARM32)
+              npm install
+              
+              # Build using napi-rs cli directly
+              npx napi build --platform --release --target armv7-unknown-linux-gnueabihf
             '
 
       - name: Upload artifact
@@ -304,7 +302,7 @@ jobs:
           if-no-files-found: error
 
   build-freebsd:
-    runs-on: macos-13
+    runs-on: macos-14
     name: Build FreeBSD
     steps:
       - uses: actions/checkout@v4
