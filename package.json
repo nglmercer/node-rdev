@@ -2,7 +2,6 @@
   "name": "node-rdev",
   "version": "1.0.0",
   "description": "node version of rdev",
-  "type": "module",
   "main": "index.js",
   "repository": "https://github.com/Barrierml/node-rdev",
   "license": "MIT",

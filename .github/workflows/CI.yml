@@ -275,7 +275,7 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: |
-          if [ "${{ matrix.settings.host }}" == "windows-latest" ]; then
+          if [ "${{ matrix.settings.host }}" = "windows-latest" ]; then
             bun install
           else
             npm install
@@ -291,7 +291,7 @@ jobs:
         shell: bash
       - name: Test bindings
         run: |
-          if [ "${{ matrix.settings.host }}" == "windows-latest" ]; then
+          if [ "${{ matrix.settings.host }}" = "windows-latest" ]; then
             bun test
           else
             npm run test:node
