@@ -168,7 +168,6 @@ jobs:
               set -e
               
               # Install build dependencies
-              # Note: Bun does NOT support ARM32, so we use npm instead
               apt-get update
               apt-get install -y curl build-essential pkg-config \
                 libx11-dev libxtst-dev libxi-dev \
@@ -270,11 +269,6 @@ jobs:
                 libxext-dev libxfixes-dev libxrender-dev \
                 pkgconfig
               
-              # Install Bun
-              curl -fsSL https://bun.sh/install | bash
-              export BUN_INSTALL="$HOME/.bun"
-              export PATH="$BUN_INSTALL/bin:$PATH"
-              
               # Install Rust
               curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
               source $HOME/.cargo/env
@@ -287,8 +281,8 @@ jobs:
               EOF
               
               # Install dependencies and build
-              $HOME/.bun/bin/bun install
-              $HOME/.bun/bin/bun run build --target aarch64-unknown-linux-musl
+              npm install
+              npx napi build --platform --release --target aarch64-unknown-linux-musl
             '
 
       - name: Upload artifact
