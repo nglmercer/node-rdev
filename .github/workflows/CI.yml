@@ -31,7 +31,7 @@ jobs:
       matrix:
         settings:
           # MacOS
-          - host: macos-15
+          - host: macos-latest
             target: x86_64-apple-darwin
             build: bun run build --target x86_64-apple-darwin
           - host: macos-latest
@@ -255,7 +255,7 @@ jobs:
           - host: macos-latest
             target: aarch64-apple-darwin
             architecture: arm64
-          - host: macos-15
+          - host: macos-latest
             target: x86_64-apple-darwin
             architecture: x64
         node:
@@ -264,12 +264,23 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          architecture: ${{ matrix.settings.architecture }}
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
       - name: Install dependencies
-        run: bun install
+        run: |
+          if [ "${{ matrix.settings.host }}" == "windows-latest" ]; then
+            bun install
+          else
+            npm install
+          fi
+        shell: bash
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -279,7 +290,13 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: bun test
+        run: |
+          if [ "${{ matrix.settings.host }}" == "windows-latest" ]; then
+            bun test
+          else
+            npm run test:node
+          fi
+        shell: bash
 
   test-linux-x64-gnu-binding:
     name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
