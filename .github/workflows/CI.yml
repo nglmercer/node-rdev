@@ -59,179 +59,6 @@ jobs:
               sudo apt-get install -y libx11-dev libxtst-dev pkg-config
               bun run build --target x86_64-unknown-linux-gnu
 
-          # Linux ARM (aarch64) - ZIG + Manual Sysroot
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            zig: true
-            build: |
-              # Download ARM64 X11 libs manually to avoid apt/dpkg issues
-              python3 -c "
-              import urllib.request, gzip, os, sys
-              arch = 'arm64'
-              mirror = 'http://ports.ubuntu.com/ubuntu-ports'
-              dist = 'jammy'
-              pkgs = {
-                  'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 
-                  'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 
-                  'libxau-dev', 'libxdmcp-dev', 'xtrans-dev', 'libpthread-stubs0-dev',
-                  'libxfixes-dev', 'libxrender-dev'
-              }
-              os.makedirs('sysroot', exist_ok=True)
-              print(f'Scanning Packages for {dist}-{arch}...')
-              for comp in ['main', 'universe']:
-                  try:
-                      with urllib.request.urlopen(f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz') as r:
-                          content = gzip.decompress(r.read()).decode('utf-8')
-                      curr = ''
-                      for line in content.splitlines():
-                          if line.startswith('Package: '): curr = line.split(': ')[1]
-                          if line.startswith('Filename: ') and curr in pkgs:
-                              url = f'{mirror}/{line.split(\": \")[1]}'
-                              print(f'Downloading {curr}...')
-                              if os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb') != 0:
-                                  print(f'Failed to download {curr}')
-                                  sys.exit(1)
-                  except Exception as e: print(f'Error: {e}')
-              "
-
-              # Configure Env
-              export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
-              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
-              export PKG_CONFIG_ALLOW_CROSS=1
-              
-              # Create linker shim
-              echo '#!/bin/bash' > aarch64-linker
-              echo 'zig cc -target aarch64-linux-gnu "$@"' >> aarch64-linker
-              chmod +x aarch64-linker
-
-              export CC="zig cc -target aarch64-linux-gnu"
-              export CXX="zig c++ -target aarch64-linux-gnu"
-              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=$(pwd)/aarch64-linker
-              
-              bun run build --target aarch64-unknown-linux-gnu
-
-          # Linux ARMv7 (armhf) - ZIG + Manual Sysroot
-          - host: ubuntu-latest
-            target: armv7-unknown-linux-gnueabihf
-            zig: true
-            build: |
-              # Download ARMHF X11 libs manually
-              python3 -c "
-              import urllib.request, gzip, os, sys
-              arch = 'armhf'
-              mirror = 'http://ports.ubuntu.com/ubuntu-ports'
-              dist = 'jammy'
-              pkgs = {
-                  'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 
-                  'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 
-                  'libxau-dev', 'libxdmcp-dev', 'xtrans-dev', 'libpthread-stubs0-dev',
-                  'libxfixes-dev', 'libxrender-dev'
-              }
-              os.makedirs('sysroot', exist_ok=True)
-              print(f'Scanning Packages for {dist}-{arch}...')
-              for comp in ['main', 'universe']:
-                  try:
-                      with urllib.request.urlopen(f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz') as r:
-                          content = gzip.decompress(r.read()).decode('utf-8')
-                      curr = ''
-                      for line in content.splitlines():
-                          if line.startswith('Package: '): curr = line.split(': ')[1]
-                          if line.startswith('Filename: ') and curr in pkgs:
-                              url = f'{mirror}/{line.split(\": \")[1]}'
-                              print(f'Downloading {curr}...')
-                              if os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb') != 0:
-                                  print(f'Failed to download {curr}')
-                                  sys.exit(1)
-                  except Exception as e: print(f'Error: {e}')
-              "
-
-              # Configure Env
-              export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
-              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/arm-linux-gnueabihf/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
-              export PKG_CONFIG_ALLOW_CROSS=1
-              
-              # Create linker shim
-              echo '#!/bin/bash' > arm-linker
-              echo 'zig cc -target arm-linux-gnueabihf "$@"' >> arm-linker
-              chmod +x arm-linker
-
-              export CC="zig cc -target arm-linux-gnueabihf"
-              export CXX="zig c++ -target arm-linux-gnueabihf"
-              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=$(pwd)/arm-linker
-
-              bun run build --target armv7-unknown-linux-gnueabihf
-
-          # Linux Musl (x64) - ZIG
-          - host: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            zig: true
-            build: |
-              sudo apt-get update
-              sudo apt-get install -y libx11-dev libxtst-dev pkg-config
-              
-              # Create linker shim
-              echo '#!/bin/bash' > musl-linker
-              echo 'zig cc -target x86_64-linux-musl "$@"' >> musl-linker
-              chmod +x musl-linker
-
-              # Allow cross config to find host libs
-              export PKG_CONFIG_ALLOW_CROSS=1
-              export CC="zig cc -target x86_64-linux-musl"
-              export CXX="zig c++ -target x86_64-linux-musl"
-              export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=$(pwd)/musl-linker
-              
-              bun run build --target x86_64-unknown-linux-musl
-
-          # Linux Musl (aarch64) - ZIG
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-musl
-            zig: true
-            build: |
-              # Download ARM64 X11 libs
-              python3 -c "
-              import urllib.request, gzip, os, sys
-              arch = 'arm64'
-              mirror = 'http://ports.ubuntu.com/ubuntu-ports'
-              dist = 'jammy'
-              pkgs = {
-                  'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst-6', 
-                  'libxext-dev', 'libxi-dev', 'x11proto-dev', 'libxcb1-dev', 
-                  'libxau-dev', 'libxdmcp-dev', 'xtrans-dev', 'libpthread-stubs0-dev',
-                  'libxfixes-dev'
-              }
-              os.makedirs('sysroot', exist_ok=True)
-              print(f'Scanning Packages for {dist}-{arch}...')
-              for comp in ['main', 'universe']:
-                  try:
-                      with urllib.request.urlopen(f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz') as r:
-                          content = gzip.decompress(r.read()).decode('utf-8')
-                      curr = ''
-                      for line in content.splitlines():
-                          if line.startswith('Package: '): curr = line.split(': ')[1]
-                          if line.startswith('Filename: ') and curr in pkgs:
-                              url = f'{mirror}/{line.split(\": \")[1]}'
-                              print(f'Downloading {curr}...')
-                              if os.system(f'wget -q {url} -O deb.deb && dpkg -x deb.deb sysroot && rm deb.deb') != 0:
-                                  print(f'Failed to download {curr}')
-                                  sys.exit(1)
-                  except Exception as e: print(f'Error: {e}')
-              "
-              
-              export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot
-              export PKG_CONFIG_PATH=$(pwd)/sysroot/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot/usr/share/pkgconfig
-              export PKG_CONFIG_ALLOW_CROSS=1
-              
-              # Create linker shim
-              echo '#!/bin/bash' > aarch64-musl-linker
-              echo 'zig cc -target aarch64-linux-musl "$@"' >> aarch64-musl-linker
-              chmod +x aarch64-musl-linker
-
-              export CC="zig cc -target aarch64-linux-musl"
-              export CXX="zig c++ -target aarch64-linux-musl"
-              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=$(pwd)/aarch64-musl-linker
-              
-              bun run build --target aarch64-unknown-linux-musl
-
     name: stable - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -241,13 +68,6 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-
-      # Install Zig if the matrix job requested it
-      - name: Setup Zig
-        if: ${{ matrix.settings.zig }}
-        uses: goto-bus-stop/setup-zig@v2
-        with:
-          version: 0.13.0
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -279,7 +99,362 @@ jobs:
           name: bindings-${{ matrix.settings.target }}
           path: ${{ env.APP_NAME }}.*.node
           if-no-files-found: error
-  
+
+  # Linux ARM64 GNU - Use Docker cross-compilation
+  build-linux-aarch64-gnu:
+    name: stable - aarch64-unknown-linux-gnu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: aarch64-unknown-linux-gnu-cargo-ubuntu-latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Download ARM64 sysroot and build
+        run: |
+          set -e
+          
+          # Create sysroot directory
+          mkdir -p sysroot-arm64
+          
+          # Download ARM64 glibc packages
+          python3 << 'EOF'
+          import urllib.request, gzip, os, sys
+          arch = 'arm64'
+          mirror = 'http://ports.ubuntu.com/ubuntu-ports'
+          dist = 'jammy'
+          pkgs = {
+              'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst6',
+              'libxext-dev', 'libxext6', 'libxi-dev', 'libxi6',
+              'x11proto-dev', 'libxcb1-dev', 'libxcb1',
+              'libxau-dev', 'libxau6', 'libxdmcp-dev', 'libxdmcp6',
+              'xtrans-dev', 'libpthread-stubs0-dev',
+              'libxfixes-dev', 'libxfixes3', 'libxrender-dev', 'libxrender1',
+              'libc6-dev', 'linux-libc-dev'
+          }
+          os.makedirs('sysroot-arm64', exist_ok=True)
+          found = set()
+          for comp in ['main', 'universe']:
+              try:
+                  url = f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz'
+                  print(f'Fetching package list from {url}')
+                  with urllib.request.urlopen(url) as r:
+                      content = gzip.decompress(r.read()).decode('utf-8')
+                  curr = ''
+                  for line in content.splitlines():
+                      if line.startswith('Package: '): curr = line.split(': ')[1]
+                      if line.startswith('Filename: ') and curr in pkgs and curr not in found:
+                          pkg_url = f'{mirror}/{line.split(": ")[1]}'
+                          print(f'Downloading {curr}...')
+                          if os.system(f'wget -q {pkg_url} -O deb.deb && dpkg -x deb.deb sysroot-arm64 && rm deb.deb') != 0:
+                              print(f'Failed to download {curr}')
+                              sys.exit(1)
+                          found.add(curr)
+              except Exception as e:
+                  print(f'Error: {e}')
+          print(f'Downloaded {len(found)} packages')
+          EOF
+          
+          # Create symlinks for library paths
+          mkdir -p sysroot-arm64/usr/lib
+          if [ -d "sysroot-arm64/lib/aarch64-linux-gnu" ]; then
+            ln -sf ../../lib/aarch64-linux-gnu sysroot-arm64/usr/lib/aarch64-linux-gnu 2>/dev/null || true
+          fi
+          
+          # Create Zig-based linker wrapper
+          cat > zig-cc-aarch64 << 'ZIGCC'
+          #!/bin/bash
+          # Filter out problematic flags and use zig cc
+          args=()
+          for arg in "$@"; do
+            case "$arg" in
+              -lgcc_s) args+=("-lgcc") ;;
+              -l:libgcc_s.so.1) args+=("-lgcc") ;;
+              -march=*) ;; # Skip march flags
+              -mcpu=*) ;; # Skip mcpu flags
+              *) args+=("$arg") ;;
+            esac
+          done
+          exec zig cc -target aarch64-linux-gnu "${args[@]}"
+          ZIGCC
+          chmod +x zig-cc-aarch64
+          
+          # Configure cargo
+          mkdir -p .cargo
+          cat > .cargo/config.toml << EOF
+          [target.aarch64-unknown-linux-gnu]
+          linker = "$(pwd)/zig-cc-aarch64"
+          rustflags = ["-C", "link-arg=--sysroot=$(pwd)/sysroot-arm64"]
+          EOF
+          
+          # Environment variables
+          export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot-arm64
+          export PKG_CONFIG_PATH=$(pwd)/sysroot-arm64/usr/lib/aarch64-linux-gnu/pkgconfig:$(pwd)/sysroot-arm64/usr/share/pkgconfig
+          export PKG_CONFIG_ALLOW_CROSS=1
+          export CC="$(pwd)/zig-cc-aarch64"
+          export CXX="$(pwd)/zig-cc-aarch64"
+          
+          bun run build --target aarch64-unknown-linux-gnu
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-aarch64-unknown-linux-gnu
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
+  # Linux ARMv7 GNU
+  build-linux-armv7-gnu:
+    name: stable - armv7-unknown-linux-gnueabihf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: armv7-unknown-linux-gnueabihf
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: armv7-unknown-linux-gnueabihf-cargo-ubuntu-latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Download ARMv7 sysroot and build
+        run: |
+          set -e
+          
+          # Create sysroot directory
+          mkdir -p sysroot-armhf
+          
+          # Download ARMv7 glibc packages
+          python3 << 'EOF'
+          import urllib.request, gzip, os, sys
+          arch = 'armhf'
+          mirror = 'http://ports.ubuntu.com/ubuntu-ports'
+          dist = 'jammy'
+          pkgs = {
+              'libx11-dev', 'libxtst-dev', 'libx11-6', 'libxtst6',
+              'libxext-dev', 'libxext6', 'libxi-dev', 'libxi6',
+              'x11proto-dev', 'libxcb1-dev', 'libxcb1',
+              'libxau-dev', 'libxau6', 'libxdmcp-dev', 'libxdmcp6',
+              'xtrans-dev', 'libpthread-stubs0-dev',
+              'libxfixes-dev', 'libxfixes3', 'libxrender-dev', 'libxrender1',
+              'libc6-dev', 'linux-libc-dev'
+          }
+          os.makedirs('sysroot-armhf', exist_ok=True)
+          found = set()
+          for comp in ['main', 'universe']:
+              try:
+                  url = f'{mirror}/dists/{dist}/{comp}/binary-{arch}/Packages.gz'
+                  print(f'Fetching package list from {url}')
+                  with urllib.request.urlopen(url) as r:
+                      content = gzip.decompress(r.read()).decode('utf-8')
+                  curr = ''
+                  for line in content.splitlines():
+                      if line.startswith('Package: '): curr = line.split(': ')[1]
+                      if line.startswith('Filename: ') and curr in pkgs and curr not in found:
+                          pkg_url = f'{mirror}/{line.split(": ")[1]}'
+                          print(f'Downloading {curr}...')
+                          if os.system(f'wget -q {pkg_url} -O deb.deb && dpkg -x deb.deb sysroot-armhf && rm deb.deb') != 0:
+                              print(f'Failed to download {curr}')
+                              sys.exit(1)
+                          found.add(curr)
+              except Exception as e:
+                  print(f'Error: {e}')
+          print(f'Downloaded {len(found)} packages')
+          EOF
+          
+          # Create Zig-based linker wrapper
+          cat > zig-cc-armhf << 'ZIGCC'
+          #!/bin/bash
+          args=()
+          for arg in "$@"; do
+            case "$arg" in
+              -lgcc_s) args+=("-lgcc") ;;
+              -l:libgcc_s.so.1) args+=("-lgcc") ;;
+              -march=*) ;;
+              -mcpu=*) ;;
+              *) args+=("$arg") ;;
+            esac
+          done
+          exec zig cc -target arm-linux-gnueabihf "${args[@]}"
+          ZIGCC
+          chmod +x zig-cc-armhf
+          
+          # Configure cargo
+          mkdir -p .cargo
+          cat > .cargo/config.toml << EOF
+          [target.armv7-unknown-linux-gnueabihf]
+          linker = "$(pwd)/zig-cc-armhf"
+          rustflags = ["-C", "link-arg=--sysroot=$(pwd)/sysroot-armhf"]
+          EOF
+          
+          # Environment variables
+          export PKG_CONFIG_SYSROOT_DIR=$(pwd)/sysroot-armhf
+          export PKG_CONFIG_PATH=$(pwd)/sysroot-armhf/usr/lib/arm-linux-gnueabihf/pkgconfig:$(pwd)/sysroot-armhf/usr/share/pkgconfig
+          export PKG_CONFIG_ALLOW_CROSS=1
+          export CC="$(pwd)/zig-cc-armhf"
+          export CXX="$(pwd)/zig-cc-armhf"
+          
+          bun run build --target armv7-unknown-linux-gnueabihf
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-armv7-unknown-linux-gnueabihf
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
+  # Linux x86_64 Musl - Use Alpine Docker for native musl build
+  build-linux-x64-musl:
+    name: stable - x86_64-unknown-linux-musl
+    runs-on: ubuntu-latest
+    container:
+      image: node:20-alpine
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apk add --no-cache \
+            bash curl git python3 \
+            build-base musl-dev \
+            libx11-dev libxtst-dev libxi-dev \
+            libxext-dev libxfixes-dev libxrender-dev \
+            pkgconfig
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          export BUN_INSTALL="$HOME/.bun"
+          export PATH="$BUN_INSTALL/bin:$PATH"
+          echo "BUN_INSTALL=$HOME/.bun" >> $GITHUB_ENV
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Add target
+        run: |
+          source $HOME/.cargo/env
+          rustup target add x86_64-unknown-linux-musl
+
+      - name: Install dependencies
+        run: |
+          source $HOME/.cargo/env
+          $HOME/.bun/bin/bun install
+
+      - name: Build
+        run: |
+          source $HOME/.cargo/env
+          $HOME/.bun/bin/bun run build --target x86_64-unknown-linux-musl
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-x86_64-unknown-linux-musl
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
+  # Linux aarch64 Musl - Use QEMU with Alpine Docker
+  build-linux-aarch64-musl:
+    name: stable - aarch64-unknown-linux-musl
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build in Alpine ARM64 container
+        run: |
+          docker run --rm --platform linux/arm64 \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            node:20-alpine sh -c '
+              set -e
+              
+              # Install build dependencies
+              apk add --no-cache \
+                bash curl git python3 \
+                build-base musl-dev \
+                libx11-dev libxtst-dev libxi-dev \
+                libxext-dev libxfixes-dev libxrender-dev \
+                pkgconfig
+              
+              # Install Bun
+              curl -fsSL https://bun.sh/install | bash
+              export BUN_INSTALL="$HOME/.bun"
+              export PATH="$BUN_INSTALL/bin:$PATH"
+              
+              # Install Rust
+              curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+              source $HOME/.cargo/env
+              
+              # Install dependencies and build
+              bun install
+              bun run build --target aarch64-unknown-linux-musl
+            '
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-aarch64-unknown-linux-musl
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
   build-freebsd:
     runs-on: macos-13
     name: Build FreeBSD
@@ -390,7 +565,7 @@ jobs:
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
-      - build
+      - build-linux-x64-musl
     strategy:
       fail-fast: false
       matrix:
@@ -422,7 +597,7 @@ jobs:
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
-      - build
+      - build-linux-aarch64-gnu
     strategy:
       fail-fast: false
       matrix:
@@ -463,7 +638,7 @@ jobs:
   test-linux-aarch64-musl-binding:
     name: Test bindings on aarch64-unknown-linux-musl - node@lts
     needs:
-      - build
+      - build-linux-aarch64-musl
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -497,7 +672,7 @@ jobs:
   test-linux-arm-gnueabihf-binding:
     name: Test bindings on armv7-unknown-linux-gnueabihf - node@${{ matrix.node }}
     needs:
-      - build
+      - build-linux-armv7-gnu
     strategy:
       fail-fast: false
       matrix:
