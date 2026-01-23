@@ -56,6 +56,7 @@
     "lint": "eslint .",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "bun test",
+    "test:node": "node --test tests/node-test.cjs",
     "version": "napi version"
   },
   "devDependencies": {

@@ -6,6 +6,7 @@ describe('sync function from native code', () => {
   test('sync function from native code', (err) => {
     startListener((data) => {
       console.log({ data })
+      return data
     })
     if (err) {
       throw err

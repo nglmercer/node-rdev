@@ -268,7 +268,6 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-          architecture: ${{ matrix.settings.architecture }}
       - name: Install dependencies
         run: bun install
       - name: Download artifacts
@@ -310,7 +309,15 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim bun test
+        run: |
+          docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim bash -c '
+            set -e
+            apt-get update && apt-get install -y curl unzip
+            curl -fsSL https://bun.sh/install | bash
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+            bun test
+          '
 
   test-linux-x64-musl-binding:
     name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
@@ -342,7 +349,15 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine bun test
+        run: |
+          docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine sh -c '
+            set -e
+            apk add --no-cache bash curl unzip
+            curl -fsSL https://bun.sh/install | bash
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+            bun test
+          '
 
   test-linux-aarch64-gnu-binding:
     name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
@@ -365,11 +380,6 @@ jobs:
       - name: List packages
         run: ls -R .
         shell: bash
-      - name: Install dependencies
-        run: |
-          bun config set supportedArchitectures.cpu "arm64"
-          bun config set supportedArchitectures.libc "glibc"
-          bun install
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
@@ -382,6 +392,11 @@ jobs:
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
             set -e
+            apt-get update && apt-get install -y curl unzip
+            curl -fsSL https://bun.sh/install | bash
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+            bun install
             bun test
             ls -la
 
@@ -406,10 +421,6 @@ jobs:
       - name: List packages
         run: ls -R .
         shell: bash
-      - name: Install dependencies
-        run: |
-          bun config set supportedArchitectures.cpu "arm"
-          bun install
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
@@ -422,7 +433,9 @@ jobs:
           options: '--platform linux/arm/v7 -v ${{ github.workspace }}:/build -w /build'
           run: |
             set -e
-            bun test
+            # Bun is not available for ARM32, use npm instead
+            npm install
+            npm test
             ls -la
 
   publish:
