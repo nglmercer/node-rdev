@@ -1,91 +1,77 @@
-# node-rdev
+# rdev-node
 
-## Overview
+A high-performance Node.js native addon for listening to system-wide keyboard and mouse events. Built with Rust.
 
-`node-rdev` is a Node.js native addon that listens to system-wide keyboard and mouse events. It leverages the `rdev` Rust crate for event handling and provides the events to Node.js through a callback function.
+## Install
 
-## Installation
-
-To install the module, use npm:
-
-```sh
-npm install node-rdev
+```bash
+npm install rdev-node
 ```
 
-## Usage
-
-The primary function provided by this module is `start_listener`. This function starts listening to keyboard and mouse events and passes them to the provided callback function.
-
-### Example
-
-Here's a simple example of how to use `node-rdev`:
+## Quick Start
 
 ```javascript
-const { start_listener } = require('node-rdev');
+const { startListener } = require('rdev-node');
 
-start_listener((event) => {
-  console.log('Event received:', event);
+startListener((event) => {
+  console.log(event);
 });
 ```
 
-## Tested Node Versions
+## Requirements
 
-The following Node.js versions have been tested with this module:
+- Node.js >= 10
+- **Rust** (required to build from source) - Install from [rustup.rs](https://rustup.rs/)
+- Linux: `libgtk-3-dev libxtst-dev`
 
-- Node.js 20
-- Electron 30
+## Build
 
-## Platforms Supported
-
-The following platforms are supported:
-
-| Platform              | Filename                        |
-| --------------------- | ------------------------------- |
-| macOS (ARM64)         | node-rdev.darwin-arm64.node     |
-| macOS (x64)           | node-rdev.darwin-x64.node       |
-| Windows (ARM64, MSVC) | node-rdev.win32-arm64-msvc.node |
-| Windows (x64, MSVC)   | node-rdev.win32-x64-msvc.node   |
-
-## Function Documentation
-
-### `start_listener(callback: JsFunction) -> Result<()>`
-
-Starts listening to system-wide keyboard and mouse events.
-
-- `callback`: A JavaScript function that will be called with the event data as its argument.
-
-The event data is provided as a JSON string with the following structure:
-
-```json
-{
-  "event_type": "EventType",
-  "name": "OptionalName",
-  "time": "EventTime",
-  "data": "EventData"
-}
+```bash
+npm install
+npm run build
 ```
 
-## Event Types
+## API
 
-The following event types are supported:
+### startListener(callback)
 
-- `KeyPress`: A key was pressed.
-- `KeyRelease`: A key was released.
-- `MouseMove`: The mouse was moved.
-- `ButtonPress`: A mouse button was pressed.
-- `ButtonRelease`: A mouse button was released.
-- `Wheel`: The mouse wheel was scrolled.
-
-## Example
+Listen to keyboard and mouse events.
 
 ```javascript
-const { start_listener } = require('node-rdev');
-
-start_listener((event) => {
-  console.log('Event received:', event);
+startListener((event) => {
+  console.log('Type:', event.eventType);
+  if (event.keyPress) console.log('Key:', event.keyPress.key);
+  if (event.mouseMove) console.log('Position:', event.mouseMove.x, event.mouseMove.y);
 });
 ```
+
+### simulateEvent(event)
+
+Simulate keyboard/mouse events.
+
+```javascript
+simulateEvent({
+  eventType: 'KeyPress',
+  keyPress: { key: 'KeyA' },
+  time: Date.now()
+});
+```
+
+### getDisplaySize()
+
+Get main display dimensions.
+
+```javascript
+const { width, height } = getDisplaySize();
+```
+
+## Supported Platforms
+
+- macOS (x64, arm64)
+- Windows (x64, ia32, arm64)
+- Linux (x64, arm64, armv7)
+- Android (arm64, armv7)
 
 ## License
 
-This project is licensed under the MIT License.
+MIT

@@ -1,9 +1,9 @@
 {
-  "name": "node-rdev",
+  "name": "rdev-node",
   "version": "1.0.0",
   "description": "node version of rdev",
   "main": "index.js",
-  "repository": "https://github.com/Barrierml/node-rdev",
+  "repository": "https://github.com/nglmercer/rdev-node",
   "license": "MIT",
   "keywords": [
     "napi-rs",
@@ -18,11 +18,7 @@
   "files": [
     "index.d.ts",
     "index.js",
-    "node-rdev.darwin-arm64.node",
-    "node-rdev.darwin-x64.node",
-    "node-rdev.win32-x64-msvc.node",
-    "node-rdev.win32-ia32-msvc.node",
-    "node-rdev.win32-arm64-msvc.node"
+    "*.node"
   ],
   "napi": {
     "binaryName": "node-rdev",
