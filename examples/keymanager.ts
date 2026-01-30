@@ -3,7 +3,7 @@
  * Uses rdev-node for keyboard/mouse event listening and simulation
  */
 
-import { startListener, InputEvent, EventTypeValue } from '../index'
+import { startListener, InputEvent, EventTypeValue, KeyCode } from '../index'
 
 import { createLogger } from './logger.js'
 
@@ -14,6 +14,61 @@ export interface InputConfig {
 }
 
 const logger = createLogger('Input')
+
+/** Modifier key types for shortcut parsing */
+enum ModifierKey {
+  Ctrl = 'ctrl',
+  Control = 'control',
+  Shift = 'shift',
+  Alt = 'alt',
+  Option = 'option',
+  Meta = 'meta',
+  Command = 'command',
+  Cmd = 'cmd',
+}
+
+/** All modifier keys for filtering */
+const MODIFIER_KEYS: readonly string[] = [
+  ModifierKey.Ctrl,
+  ModifierKey.Control,
+  ModifierKey.Shift,
+  ModifierKey.Alt,
+  ModifierKey.Option,
+  ModifierKey.Meta,
+  ModifierKey.Command,
+  ModifierKey.Cmd,
+] as const
+
+/** Normalized modifier names for pressedKeys Set */
+enum NormalizedModifier {
+  Ctrl = 'ctrl',
+  Shift = 'shift',
+  Alt = 'alt',
+  Meta = 'meta',
+}
+
+/**
+ * Maps shortcut key strings to KeyCode enum values (normalized to lowercase)
+ * This ensures type-safe key mapping without magic strings
+ */
+const SHORTCUT_TO_KEYCODE: Readonly<Record<string, string>> = {
+  '1': KeyCode.Num1.toLowerCase(),
+  '2': KeyCode.Num2.toLowerCase(),
+  '3': KeyCode.Num3.toLowerCase(),
+  '4': KeyCode.Num4.toLowerCase(),
+  '5': KeyCode.Num5.toLowerCase(),
+  '6': KeyCode.Num6.toLowerCase(),
+  '7': KeyCode.Num7.toLowerCase(),
+  '8': KeyCode.Num8.toLowerCase(),
+  '9': KeyCode.Num9.toLowerCase(),
+  '0': KeyCode.Num0.toLowerCase(),
+  'c': KeyCode.KeyC.toLowerCase(),
+  's': KeyCode.KeyS.toLowerCase(),
+  'h': KeyCode.KeyH.toLowerCase(),
+  't': KeyCode.KeyT.toLowerCase(),
+  'm': KeyCode.KeyM.toLowerCase(),
+  'r': KeyCode.KeyR.toLowerCase(),
+} as const
 
 /**
  * Parse a key combination string (e.g., "Ctrl+Shift+C")
@@ -27,34 +82,14 @@ export function parseKeyCombo(combo: string): {
 } {
   const parts = combo.split('+').map((p) => p.trim().toLowerCase())
 
-  const key = parts.find((p) => !['ctrl', 'control', 'shift', 'alt', 'option', 'meta', 'command', 'cmd'].includes(p)) || ''
-
-  // Map key names from shortcut format to normalized format used in pressedKeys
-  const keyMap: Record<string, string> = {
-    '1': 'num1',
-    '2': 'num2',
-    '3': 'num3',
-    '4': 'num4',
-    '5': 'num5',
-    '6': 'num6',
-    '7': 'num7',
-    '8': 'num8',
-    '9': 'num9',
-    '0': 'num0',
-    'c': 'keyc',
-    's': 'keys',
-    'h': 'keyh',
-    't': 'keyt',
-    'm': 'keym',
-    'r': 'keyr',
-  }
+  const key = parts.find((p) => !MODIFIER_KEYS.includes(p)) || ''
 
   return {
-    ctrl: parts.includes('ctrl') || parts.includes('control'),
-    shift: parts.includes('shift'),
-    alt: parts.includes('alt') || parts.includes('option'),
-    meta: parts.includes('meta') || parts.includes('command') || parts.includes('cmd'),
-    key: keyMap[key] || key,
+    ctrl: parts.includes(ModifierKey.Ctrl) || parts.includes(ModifierKey.Control),
+    shift: parts.includes(ModifierKey.Shift),
+    alt: parts.includes(ModifierKey.Alt) || parts.includes(ModifierKey.Option),
+    meta: parts.includes(ModifierKey.Meta) || parts.includes(ModifierKey.Command) || parts.includes(ModifierKey.Cmd),
+    key: SHORTCUT_TO_KEYCODE[key] || key,
   }
 }
 
@@ -169,20 +204,28 @@ export class InputManager {
 
   /**
    * Normalize key names for comparison
-   * Maps KeyCode values to simplified modifier names
+   * Maps KeyCode values to simplified modifier names using enum-based lookup
    */
   private normalizeKeyName(key: string): string {
-    const keyMap: Record<string, string> = {
-      controlleft: 'ctrl',
-      controlright: 'ctrl',
-      shiftleft: 'shift',
-      shiftright: 'shift',
-      alt: 'alt',
-      altgr: 'alt',
-      metaleft: 'meta',
-      metaright: 'meta',
+    const normalizedKey = key.toLowerCase()
+
+    // Map KeyCode values to normalized modifier names
+    switch (normalizedKey) {
+      case KeyCode.ControlLeft.toLowerCase():
+      case KeyCode.ControlRight.toLowerCase():
+        return NormalizedModifier.Ctrl
+      case KeyCode.ShiftLeft.toLowerCase():
+      case KeyCode.ShiftRight.toLowerCase():
+        return NormalizedModifier.Shift
+      case KeyCode.Alt.toLowerCase():
+      case KeyCode.AltGr.toLowerCase():
+        return NormalizedModifier.Alt
+      case KeyCode.MetaLeft.toLowerCase():
+      case KeyCode.MetaRight.toLowerCase():
+        return NormalizedModifier.Meta
+      default:
+        return normalizedKey
     }
-    return keyMap[key.toLowerCase()] || key.toLowerCase()
   }
 
   /**
@@ -199,17 +242,17 @@ export class InputManager {
       const parsed = parseKeyCombo(combo)
 
       // Skip if this is a modifier key being pressed (don't trigger on Ctrl+Shift+Ctrl)
-      if (['ctrl', 'shift', 'alt', 'meta'].includes(pressedKey)) continue
+      if (Object.values(NormalizedModifier).includes(pressedKey as NormalizedModifier)) continue
 
       // Check if key matches (the main key, not modifiers)
       // parsed.key is already lowercase from parseKeyCombo, pressedKey is normalized to lowercase
       if (parsed.key !== pressedKey) continue
 
       // Check modifiers - use the normalized key names that are stored in pressedKeys
-      const hasCtrl = this.pressedKeys.has('ctrl')
-      const hasShift = this.pressedKeys.has('shift')
-      const hasAlt = this.pressedKeys.has('alt')
-      const hasMeta = this.pressedKeys.has('meta')
+      const hasCtrl = this.pressedKeys.has(NormalizedModifier.Ctrl)
+      const hasShift = this.pressedKeys.has(NormalizedModifier.Shift)
+      const hasAlt = this.pressedKeys.has(NormalizedModifier.Alt)
+      const hasMeta = this.pressedKeys.has(NormalizedModifier.Meta)
 
       if (hasCtrl === parsed.ctrl && hasShift === parsed.shift && hasAlt === parsed.alt && hasMeta === parsed.meta) {
         logger.info('Shortcut triggered', { action, combo })
