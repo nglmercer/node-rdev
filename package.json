@@ -52,7 +52,6 @@
     "format:toml": "taplo format",
     "format:rs": "cargo fmt",
     "lint": "eslint .",
-    "prepublishOnly": "napi prepublish -t npm",
     "test": "bun test",
     "test:node": "node --test tests/node-test.cjs",
     "test:binding": "node --test tests/binding.test.cjs",
@@ -89,18 +88,5 @@
     "trailingComma": "all",
     "singleQuote": true,
     "arrowParens": "always"
-  },
-  "optionalDependencies": {
-    "node-rdev-darwin-x64": "1.0.0",
-    "node-rdev-linux-x64-gnu": "1.0.0",
-    "node-rdev-win32-x64-msvc": "1.0.0",
-    "node-rdev-linux-x64-musl": "1.0.0",
-    "node-rdev-linux-arm64-gnu": "1.0.0",
-    "node-rdev-win32-ia32-msvc": "1.0.0",
-    "node-rdev-linux-arm-gnueabihf": "1.0.0",
-    "node-rdev-darwin-arm64": "1.0.0",
-    "node-rdev-android-arm64": "1.0.0",
-    "node-rdev-win32-arm64-msvc": "1.0.0",
-    "node-rdev-android-arm-eabi": "1.0.0"
   }
 }

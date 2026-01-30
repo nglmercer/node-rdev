@@ -37,6 +37,9 @@ export declare const enum EventTypeValue {
 /** Get the size of the main display */
 export declare function getDisplaySize(): DisplaySize
 
+/** Initialize the rdev simulation system. Call this once before using simulate_event. */
+export declare function initSimulation(): void
+
 /** Represents an input event */
 export interface InputEvent {
   /** The type of event */

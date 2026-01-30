@@ -75,8 +75,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-android-arm64')
-        const bindingPackageVersion = require('node-rdev-android-arm64/package.json').version
+        const binding = require('rdev-node-android-arm64')
+        const bindingPackageVersion = require('rdev-node-android-arm64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -97,8 +97,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-android-arm-eabi')
-        const bindingPackageVersion = require('node-rdev-android-arm-eabi/package.json').version
+        const binding = require('rdev-node-android-arm-eabi')
+        const bindingPackageVersion = require('rdev-node-android-arm-eabi/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -127,8 +127,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-win32-x64-gnu')
-          const bindingPackageVersion = require('node-rdev-win32-x64-gnu/package.json').version
+          const binding = require('rdev-node-win32-x64-gnu')
+          const bindingPackageVersion = require('rdev-node-win32-x64-gnu/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -149,8 +149,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-win32-x64-msvc')
-          const bindingPackageVersion = require('node-rdev-win32-x64-msvc/package.json').version
+          const binding = require('rdev-node-win32-x64-msvc')
+          const bindingPackageVersion = require('rdev-node-win32-x64-msvc/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -172,8 +172,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-win32-ia32-msvc')
-        const bindingPackageVersion = require('node-rdev-win32-ia32-msvc/package.json').version
+        const binding = require('rdev-node-win32-ia32-msvc')
+        const bindingPackageVersion = require('rdev-node-win32-ia32-msvc/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -194,8 +194,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-win32-arm64-msvc')
-        const bindingPackageVersion = require('node-rdev-win32-arm64-msvc/package.json').version
+        const binding = require('rdev-node-win32-arm64-msvc')
+        const bindingPackageVersion = require('rdev-node-win32-arm64-msvc/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -219,8 +219,8 @@ function requireNative() {
       loadErrors.push(e)
     }
     try {
-      const binding = require('node-rdev-darwin-universal')
-      const bindingPackageVersion = require('node-rdev-darwin-universal/package.json').version
+      const binding = require('rdev-node-darwin-universal')
+      const bindingPackageVersion = require('rdev-node-darwin-universal/package.json').version
       if (
         bindingPackageVersion !== '1.0.0' &&
         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -241,8 +241,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-darwin-x64')
-        const bindingPackageVersion = require('node-rdev-darwin-x64/package.json').version
+        const binding = require('rdev-node-darwin-x64')
+        const bindingPackageVersion = require('rdev-node-darwin-x64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -263,8 +263,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-darwin-arm64')
-        const bindingPackageVersion = require('node-rdev-darwin-arm64/package.json').version
+        const binding = require('rdev-node-darwin-arm64')
+        const bindingPackageVersion = require('rdev-node-darwin-arm64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -289,8 +289,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-freebsd-x64')
-        const bindingPackageVersion = require('node-rdev-freebsd-x64/package.json').version
+        const binding = require('rdev-node-freebsd-x64')
+        const bindingPackageVersion = require('rdev-node-freebsd-x64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -311,8 +311,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-freebsd-arm64')
-        const bindingPackageVersion = require('node-rdev-freebsd-arm64/package.json').version
+        const binding = require('rdev-node-freebsd-arm64')
+        const bindingPackageVersion = require('rdev-node-freebsd-arm64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -338,8 +338,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-x64-musl')
-          const bindingPackageVersion = require('node-rdev-linux-x64-musl/package.json').version
+          const binding = require('rdev-node-linux-x64-musl')
+          const bindingPackageVersion = require('rdev-node-linux-x64-musl/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -360,8 +360,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-x64-gnu')
-          const bindingPackageVersion = require('node-rdev-linux-x64-gnu/package.json').version
+          const binding = require('rdev-node-linux-x64-gnu')
+          const bindingPackageVersion = require('rdev-node-linux-x64-gnu/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -384,8 +384,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-arm64-musl')
-          const bindingPackageVersion = require('node-rdev-linux-arm64-musl/package.json').version
+          const binding = require('rdev-node-linux-arm64-musl')
+          const bindingPackageVersion = require('rdev-node-linux-arm64-musl/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -406,8 +406,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-arm64-gnu')
-          const bindingPackageVersion = require('node-rdev-linux-arm64-gnu/package.json').version
+          const binding = require('rdev-node-linux-arm64-gnu')
+          const bindingPackageVersion = require('rdev-node-linux-arm64-gnu/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -430,8 +430,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-arm-musleabihf')
-          const bindingPackageVersion = require('node-rdev-linux-arm-musleabihf/package.json').version
+          const binding = require('rdev-node-linux-arm-musleabihf')
+          const bindingPackageVersion = require('rdev-node-linux-arm-musleabihf/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -452,8 +452,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-arm-gnueabihf')
-          const bindingPackageVersion = require('node-rdev-linux-arm-gnueabihf/package.json').version
+          const binding = require('rdev-node-linux-arm-gnueabihf')
+          const bindingPackageVersion = require('rdev-node-linux-arm-gnueabihf/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -476,8 +476,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-loong64-musl')
-          const bindingPackageVersion = require('node-rdev-linux-loong64-musl/package.json').version
+          const binding = require('rdev-node-linux-loong64-musl')
+          const bindingPackageVersion = require('rdev-node-linux-loong64-musl/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -498,8 +498,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-loong64-gnu')
-          const bindingPackageVersion = require('node-rdev-linux-loong64-gnu/package.json').version
+          const binding = require('rdev-node-linux-loong64-gnu')
+          const bindingPackageVersion = require('rdev-node-linux-loong64-gnu/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -522,8 +522,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-riscv64-musl')
-          const bindingPackageVersion = require('node-rdev-linux-riscv64-musl/package.json').version
+          const binding = require('rdev-node-linux-riscv64-musl')
+          const bindingPackageVersion = require('rdev-node-linux-riscv64-musl/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -544,8 +544,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('node-rdev-linux-riscv64-gnu')
-          const bindingPackageVersion = require('node-rdev-linux-riscv64-gnu/package.json').version
+          const binding = require('rdev-node-linux-riscv64-gnu')
+          const bindingPackageVersion = require('rdev-node-linux-riscv64-gnu/package.json').version
           if (
             bindingPackageVersion !== '1.0.0' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -567,8 +567,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-linux-ppc64-gnu')
-        const bindingPackageVersion = require('node-rdev-linux-ppc64-gnu/package.json').version
+        const binding = require('rdev-node-linux-ppc64-gnu')
+        const bindingPackageVersion = require('rdev-node-linux-ppc64-gnu/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -589,8 +589,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-linux-s390x-gnu')
-        const bindingPackageVersion = require('node-rdev-linux-s390x-gnu/package.json').version
+        const binding = require('rdev-node-linux-s390x-gnu')
+        const bindingPackageVersion = require('rdev-node-linux-s390x-gnu/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -615,8 +615,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-openharmony-arm64')
-        const bindingPackageVersion = require('node-rdev-openharmony-arm64/package.json').version
+        const binding = require('rdev-node-openharmony-arm64')
+        const bindingPackageVersion = require('rdev-node-openharmony-arm64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -637,8 +637,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-openharmony-x64')
-        const bindingPackageVersion = require('node-rdev-openharmony-x64/package.json').version
+        const binding = require('rdev-node-openharmony-x64')
+        const bindingPackageVersion = require('rdev-node-openharmony-x64/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -659,8 +659,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('node-rdev-openharmony-arm')
-        const bindingPackageVersion = require('node-rdev-openharmony-arm/package.json').version
+        const binding = require('rdev-node-openharmony-arm')
+        const bindingPackageVersion = require('rdev-node-openharmony-arm/package.json').version
         if (
           bindingPackageVersion !== '1.0.0' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -697,7 +697,7 @@ if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
   }
   if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
     try {
-      wasiBinding = require('node-rdev-wasm32-wasi')
+      wasiBinding = require('rdev-node-wasm32-wasi')
       nativeBinding = wasiBinding
     } catch (err) {
       if (process.env.NAPI_RS_FORCE_WASI) {
@@ -738,6 +738,7 @@ module.exports = nativeBinding
 module.exports.ButtonType = nativeBinding.ButtonType
 module.exports.EventTypeValue = nativeBinding.EventTypeValue
 module.exports.getDisplaySize = nativeBinding.getDisplaySize
+module.exports.initSimulation = nativeBinding.initSimulation
 module.exports.KeyCode = nativeBinding.KeyCode
 module.exports.simulateEvent = nativeBinding.simulateEvent
 module.exports.startListener = nativeBinding.startListener
