@@ -19,8 +19,23 @@ pub use events::{
   MouseMoveEvent, WheelEvent,
 };
 
-// Re-export utility functions for modifier/key handling
-pub use conversions::{is_modifier_key, normalize_key_name, string_key_to_keycode};
+/// Normalizes a KeyCode to its modifier name if it's a modifier key
+#[napi]
+pub fn normalize_key_name(key_code: KeyCode) -> String {
+  conversions::normalize_key_name(&key_code)
+}
+
+/// Checks if a KeyCode is a modifier key
+#[napi]
+pub fn is_modifier_key(key_code: KeyCode) -> bool {
+  conversions::is_modifier_key(&key_code)
+}
+
+/// Converts a string key representation to its KeyCode
+#[napi]
+pub fn string_key_to_keycode(key: String) -> Option<KeyCode> {
+  conversions::string_key_to_keycode(&key)
+}
 
 // Global display manager for X11 - keeps display open for simulation
 static DISPLAY_MANAGER: Lazy<Mutex<Option<DisplayManager>>> = Lazy::new(|| Mutex::new(None));
