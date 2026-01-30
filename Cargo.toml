@@ -1,8 +1,8 @@
 [package]
-authors = ["LongYinan <lynweklm@gmail.com>"]
+authors = ["nglmercer <nglmercer@gmail.com>"]
 edition = "2021"
 name    = "rdev-node"
-version = "1.0.0"
+version = "1.0.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
