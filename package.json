@@ -55,6 +55,10 @@
     "test": "bun test",
     "test:node": "node --test tests/node-test.cjs",
     "test:binding": "node --test tests/binding.test.cjs",
+    "test:keys": "node --test tests/keys.test.cjs",
+    "test:events": "node --test tests/events.test.cjs",
+    "test:simulation": "node --test tests/simulation.test.cjs",
+    "test:all": "node --test tests/*.test.cjs",
     "version": "napi version"
   },
   "devDependencies": {
