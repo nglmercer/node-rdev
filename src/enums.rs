@@ -11,6 +11,7 @@ pub enum ButtonType {
 
 /// Represents keyboard keys
 #[napi(string_enum)]
+#[derive(Debug)]
 pub enum KeyCode {
   Alt,
   AltGr,
@@ -118,6 +119,48 @@ pub enum KeyCode {
   KpDelete,
   Function,
   Unknown,
+}
+
+impl KeyCode {
+  /// Returns true if this key is a modifier key (Ctrl, Shift, Alt, Meta)
+  pub fn is_modifier(&self) -> bool {
+    matches!(
+      self,
+      KeyCode::ControlLeft
+        | KeyCode::ControlRight
+        | KeyCode::ShiftLeft
+        | KeyCode::ShiftRight
+        | KeyCode::Alt
+        | KeyCode::AltGr
+        | KeyCode::MetaLeft
+        | KeyCode::MetaRight
+    )
+  }
+
+  /// Returns the normalized modifier name if this is a modifier key
+  pub fn as_modifier_name(&self) -> Option<&'static str> {
+    match self {
+      KeyCode::ControlLeft | KeyCode::ControlRight => Some("ctrl"),
+      KeyCode::ShiftLeft | KeyCode::ShiftRight => Some("shift"),
+      KeyCode::Alt | KeyCode::AltGr => Some("alt"),
+      KeyCode::MetaLeft | KeyCode::MetaRight => Some("meta"),
+      _ => None,
+    }
+  }
+
+  /// Returns the lowercase string representation for comparison
+  pub fn as_lowercase(&self) -> String {
+    format!("{:?}", self).to_lowercase()
+  }
+}
+
+/// Represents normalized modifier keys for shortcut handling
+#[napi(string_enum)]
+pub enum NormalizedModifier {
+  Ctrl,
+  Shift,
+  Alt,
+  Meta,
 }
 
 /// Represents the type of event

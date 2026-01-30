@@ -14,7 +14,7 @@ export declare const enum ButtonType {
   Left = 'Left',
   Right = 'Right',
   Middle = 'Middle',
-  Unknown = 'Unknown',
+  Unknown = 'Unknown'
 }
 
 /** Display size information */
@@ -30,7 +30,7 @@ export declare const enum EventTypeValue {
   MouseMove = 'MouseMove',
   ButtonPress = 'ButtonPress',
   ButtonRelease = 'ButtonRelease',
-  Wheel = 'Wheel',
+  Wheel = 'Wheel'
 }
 
 /** Get the size of the main display */
@@ -168,7 +168,7 @@ export declare const enum KeyCode {
   Kp9 = 'Kp9',
   KpDelete = 'KpDelete',
   Function = 'Function',
-  Unknown = 'Unknown',
+  Unknown = 'Unknown'
 }
 
 /** Represents a key press event */
@@ -185,6 +185,14 @@ export interface KeyReleaseEvent {
 export interface MouseMoveEvent {
   x: number
   y: number
+}
+
+/** Represents normalized modifier keys for shortcut handling */
+export declare const enum NormalizedModifier {
+  Ctrl = 'Ctrl',
+  Shift = 'Shift',
+  Alt = 'Alt',
+  Meta = 'Meta'
 }
 
 /** Simulate an input event */

@@ -10,5 +10,8 @@
 *.debug text eol=lf merge=union 
 
 # Generated codes
-index.js linguist-detectable=false
-index.d.ts linguist-detectable=false 
+index.js linguist-generated
+index.d.ts linguist-generated
+
+# Documentation
+examples/** linguist-documentation=false

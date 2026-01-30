@@ -11,12 +11,16 @@ use napi_derive::napi;
 use once_cell::sync::Lazy;
 use rdev::listen;
 use std::sync::Mutex;
+
 // Re-export the main types for easier access
-pub use enums::{ButtonType, EventTypeValue, KeyCode};
+pub use enums::{ButtonType, EventTypeValue, KeyCode, NormalizedModifier};
 pub use events::{
   ButtonPressEvent, ButtonReleaseEvent, DisplaySize, InputEvent, KeyPressEvent, KeyReleaseEvent,
   MouseMoveEvent, WheelEvent,
 };
+
+// Re-export utility functions for modifier/key handling
+pub use conversions::{is_modifier_key, normalize_key_name, string_key_to_keycode};
 
 // Global display manager for X11 - keeps display open for simulation
 static DISPLAY_MANAGER: Lazy<Mutex<Option<DisplayManager>>> = Lazy::new(|| Mutex::new(None));

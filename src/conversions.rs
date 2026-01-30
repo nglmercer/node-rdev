@@ -2,6 +2,137 @@ use super::enums::*;
 use super::events::*;
 use rdev::{Button, Event, EventType, Key};
 
+/// Normalizes a KeyCode to its modifier name if it's a modifier key
+pub fn normalize_key_name(key_code: &KeyCode) -> String {
+  key_code
+    .as_modifier_name()
+    .map(|s| s.to_string())
+    .unwrap_or_else(|| key_code.as_lowercase())
+}
+
+/// Checks if a KeyCode is a modifier key
+pub fn is_modifier_key(key_code: &KeyCode) -> bool {
+  key_code.is_modifier()
+}
+
+/// Converts a string key representation to its KeyCode
+/// Supports both single characters (e.g., "c", "1") and full key names (e.g., "KeyC", "Num1")
+pub fn string_key_to_keycode(key: &str) -> Option<KeyCode> {
+  match key.to_lowercase().as_str() {
+    // Number keys
+    "1" | "num1" => Some(KeyCode::Num1),
+    "2" | "num2" => Some(KeyCode::Num2),
+    "3" | "num3" => Some(KeyCode::Num3),
+    "4" | "num4" => Some(KeyCode::Num4),
+    "5" | "num5" => Some(KeyCode::Num5),
+    "6" | "num6" => Some(KeyCode::Num6),
+    "7" | "num7" => Some(KeyCode::Num7),
+    "8" | "num8" => Some(KeyCode::Num8),
+    "9" | "num9" => Some(KeyCode::Num9),
+    "0" | "num0" => Some(KeyCode::Num0),
+    // Letter keys
+    "a" | "keya" => Some(KeyCode::KeyA),
+    "b" | "keyb" => Some(KeyCode::KeyB),
+    "c" | "keyc" => Some(KeyCode::KeyC),
+    "d" | "keyd" => Some(KeyCode::KeyD),
+    "e" | "keye" => Some(KeyCode::KeyE),
+    "f" | "keyf" => Some(KeyCode::KeyF),
+    "g" | "keyg" => Some(KeyCode::KeyG),
+    "h" | "keyh" => Some(KeyCode::KeyH),
+    "i" | "keyi" => Some(KeyCode::KeyI),
+    "j" | "keyj" => Some(KeyCode::KeyJ),
+    "k" | "keyk" => Some(KeyCode::KeyK),
+    "l" | "keyl" => Some(KeyCode::KeyL),
+    "m" | "keym" => Some(KeyCode::KeyM),
+    "n" | "keyn" => Some(KeyCode::KeyN),
+    "o" | "keyo" => Some(KeyCode::KeyO),
+    "p" | "keyp" => Some(KeyCode::KeyP),
+    "q" | "keyq" => Some(KeyCode::KeyQ),
+    "r" | "keyr" => Some(KeyCode::KeyR),
+    "s" | "keys" => Some(KeyCode::KeyS),
+    "t" | "keyt" => Some(KeyCode::KeyT),
+    "u" | "keyu" => Some(KeyCode::KeyU),
+    "v" | "keyv" => Some(KeyCode::KeyV),
+    "w" | "keyw" => Some(KeyCode::KeyW),
+    "x" | "keyx" => Some(KeyCode::KeyX),
+    "y" | "keyy" => Some(KeyCode::KeyY),
+    "z" | "keyz" => Some(KeyCode::KeyZ),
+    // Function keys
+    "f1" => Some(KeyCode::F1),
+    "f2" => Some(KeyCode::F2),
+    "f3" => Some(KeyCode::F3),
+    "f4" => Some(KeyCode::F4),
+    "f5" => Some(KeyCode::F5),
+    "f6" => Some(KeyCode::F6),
+    "f7" => Some(KeyCode::F7),
+    "f8" => Some(KeyCode::F8),
+    "f9" => Some(KeyCode::F9),
+    "f10" => Some(KeyCode::F10),
+    "f11" => Some(KeyCode::F11),
+    "f12" => Some(KeyCode::F12),
+    // Special keys
+    "escape" | "esc" => Some(KeyCode::Escape),
+    "return" | "enter" => Some(KeyCode::Return),
+    "space" => Some(KeyCode::Space),
+    "tab" => Some(KeyCode::Tab),
+    "backspace" => Some(KeyCode::Backspace),
+    "delete" | "del" => Some(KeyCode::Delete),
+    "insert" | "ins" => Some(KeyCode::Insert),
+    "home" => Some(KeyCode::Home),
+    "end" => Some(KeyCode::End),
+    "pageup" => Some(KeyCode::PageUp),
+    "pagedown" => Some(KeyCode::PageDown),
+    "up" | "uparrow" => Some(KeyCode::UpArrow),
+    "down" | "downarrow" => Some(KeyCode::DownArrow),
+    "left" | "leftarrow" => Some(KeyCode::LeftArrow),
+    "right" | "rightarrow" => Some(KeyCode::RightArrow),
+    // Modifier keys
+    "ctrl" | "controll" | "controlleft" => Some(KeyCode::ControlLeft),
+    "ctrlr" | "controlr" | "controlright" => Some(KeyCode::ControlRight),
+    "shift" | "shiftl" | "shiftleft" => Some(KeyCode::ShiftLeft),
+    "shiftr" | "shiftright" => Some(KeyCode::ShiftRight),
+    "alt" => Some(KeyCode::Alt),
+    "altgr" => Some(KeyCode::AltGr),
+    "meta" | "metal" | "metaleft" => Some(KeyCode::MetaLeft),
+    "metar" | "metaright" => Some(KeyCode::MetaRight),
+    // Numpad keys
+    "kp0" | "numpad0" => Some(KeyCode::Kp0),
+    "kp1" | "numpad1" => Some(KeyCode::Kp1),
+    "kp2" | "numpad2" => Some(KeyCode::Kp2),
+    "kp3" | "numpad3" => Some(KeyCode::Kp3),
+    "kp4" | "numpad4" => Some(KeyCode::Kp4),
+    "kp5" | "numpad5" => Some(KeyCode::Kp5),
+    "kp6" | "numpad6" => Some(KeyCode::Kp6),
+    "kp7" | "numpad7" => Some(KeyCode::Kp7),
+    "kp8" | "numpad8" => Some(KeyCode::Kp8),
+    "kp9" | "numpad9" => Some(KeyCode::Kp9),
+    "kpreturn" | "kpenter" => Some(KeyCode::KpReturn),
+    "kpminus" => Some(KeyCode::KpMinus),
+    "kpplus" => Some(KeyCode::KpPlus),
+    "kpmultiply" => Some(KeyCode::KpMultiply),
+    "kpdivide" => Some(KeyCode::KpDivide),
+    "kpdelete" | "kpdecimal" => Some(KeyCode::KpDelete),
+    // Other keys
+    "minus" | "dash" | "hyphen" => Some(KeyCode::Minus),
+    "equal" | "equals" => Some(KeyCode::Equal),
+    "comma" => Some(KeyCode::Comma),
+    "dot" | "period" => Some(KeyCode::Dot),
+    "slash" | "forwardslash" => Some(KeyCode::Slash),
+    "backslash" => Some(KeyCode::BackSlash),
+    "semicolon" | "semi" => Some(KeyCode::SemiColon),
+    "quote" | "apostrophe" => Some(KeyCode::Quote),
+    "backquote" | "grave" | "backtick" => Some(KeyCode::BackQuote),
+    "leftbracket" | "lbracket" => Some(KeyCode::LeftBracket),
+    "rightbracket" | "rbracket" => Some(KeyCode::RightBracket),
+    "capslock" => Some(KeyCode::CapsLock),
+    "numlock" => Some(KeyCode::NumLock),
+    "scrolllock" => Some(KeyCode::ScrollLock),
+    "printscreen" | "prtsc" => Some(KeyCode::PrintScreen),
+    "pause" => Some(KeyCode::Pause),
+    _ => None,
+  }
+}
+
 // Helper functions to convert rdev types to our enums
 pub fn button_to_type(btn: &Button) -> ButtonType {
   match btn {
