@@ -136,17 +136,41 @@ describe('rdev-node Complete Test Suite', () => {
         assert.ok(typeof size.width === 'number' && size.width >= 0)
         assert.ok(typeof size.height === 'number' && size.height >= 0)
       } catch (e) {
-        console.log('Skipping display size actual values: ' + e.message)
+        if (e.message.includes('NoDisplay')) {
+          console.log('Skipping display size check: NoDisplay')
+          return
+        }
+        throw e
       }
     })
 
     test('initSimulation lifecycle', () => {
-      assert.doesNotThrow(() => rdev.initSimulation())
+      try {
+        rdev.initSimulation()
+      } catch (e) {
+        if (e.message.includes('NoDisplay')) {
+          console.log('Skipping initSimulation: NoDisplay')
+          return
+        }
+        throw e
+      }
     })
   })
 
   describe('Simulation Events', () => {
-    before(() => rdev.initSimulation())
+    let simulationInitialized = false
+    before(() => {
+      try {
+        rdev.initSimulation()
+        simulationInitialized = true
+      } catch (e) {
+        if (e.message.includes('NoDisplay')) {
+          console.log('Skipping simulation events: NoDisplay')
+        } else {
+          throw e
+        }
+      }
+    })
 
     const now = Date.now()
     const testEvents = [
@@ -158,18 +182,30 @@ describe('rdev-node Complete Test Suite', () => {
     ]
 
     testEvents.forEach(({ name, data }) => {
-      test(`simulateEvent: ${name}`, () => {
+      test(`simulateEvent: ${name}`, (t) => {
+        if (!simulationInitialized) {
+          t.skip('No display available')
+          return
+        }
         assert.doesNotThrow(() => rdev.simulateEvent(data))
       })
     })
 
-    test('simulateEvent validation - missing keyPress', () => {
+    test('simulateEvent validation - missing keyPress', (t) => {
+      if (!simulationInitialized) {
+        t.skip('No display available')
+        return
+      }
       assert.throws(() => {
         rdev.simulateEvent({ eventType: rdev.EventTypeValue.KeyPress, time: now })
       }, { message: /Missing key_press/ })
     })
 
-    test('simulateEvent validation - missing mouseMove', () => {
+    test('simulateEvent validation - missing mouseMove', (t) => {
+        if (!simulationInitialized) {
+          t.skip('No display available')
+          return
+        }
         assert.throws(() => {
           rdev.simulateEvent({ eventType: rdev.EventTypeValue.MouseMove, time: now })
         }, { message: /Missing mouse_move/ })

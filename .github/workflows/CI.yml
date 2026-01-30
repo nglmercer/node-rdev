@@ -312,9 +312,13 @@ jobs:
           if [ "${{ matrix.settings.host }}" = "windows-latest" ]; then
             bun install
             bun run test
-          else
+          elif [ "${{ matrix.settings.host }}" = "macos-latest" ]; then
             npm install
             npm run test
+          else
+            sudo apt-get update && sudo apt-get install -y xvfb xauth
+            npm install
+            xvfb-run npm run test
           fi
         shell: bash
 
@@ -340,20 +344,20 @@ jobs:
           docker run --rm $PLATFORM_ARG -v $(pwd):/build -w /build $DOCKER_IMAGE sh -c "
             set -e
             if [ -f /etc/alpine-release ]; then
-              apk add --no-cache bash curl unzip libxtst libx11 libxi libxext libxfixes libxrender
+              apk add --no-cache bash curl unzip libxtst libx11 libxi libxext libxfixes libxrender xvfb-run xauth
             else
-              apt-get update && apt-get install -y curl unzip libx11-6 libxtst6 libxi6 libxext6 libxfixes3 libxrender1
+              apt-get update && apt-get install -y curl unzip libx11-6 libxtst6 libxi6 libxext6 libxfixes3 libxrender1 xvfb xauth
             fi
             
             if [ \"${{ matrix.settings.no_bun }}\" = \"true\" ]; then
               npm install
-              npm run test
+              xvfb-run npm run test
             else
               curl -fsSL https://bun.sh/install | bash
               export BUN_INSTALL=\"\$HOME/.bun\"
               export PATH=\"\$BUN_INSTALL/bin:\$PATH\"
               bun install
-              bun run test
+              xvfb-run bun run test
             fi
           "
         shell: bash
