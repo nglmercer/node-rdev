@@ -2,7 +2,6 @@
  * Comprehensive tests for all EventTypeValue and ButtonType values
  * and event structure validation
  */
-/* eslint-disable */
 const { test, describe } = require('node:test');
 const assert = require('node:assert');
 const rdev = require('../index.js');

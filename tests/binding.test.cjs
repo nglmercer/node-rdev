@@ -1,4 +1,3 @@
-/* eslint-disable */
 const { test } = require('node:test');
 const assert = require('node:assert');
 const rdev = require('../index.js');

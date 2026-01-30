@@ -1,7 +1,5 @@
 import { startListener, EventTypeValue, simulateEvent, KeyCode, initSimulation } from '../index'
 
-
-
 async function main() {
   // Initialize simulation system first (required on Linux/X11)
   console.log('Initializing simulation...')
@@ -9,7 +7,7 @@ async function main() {
   console.log('Simulation initialized')
 
   // Wait a bit for initialization to complete
-  await new Promise(resolve => setTimeout(resolve, 100))
+  await new Promise((resolve) => setTimeout(resolve, 100))
 
   console.log('Simulating KeyA press...')
   simulateEvent({
@@ -22,8 +20,8 @@ async function main() {
   console.log('KeyA press simulated')
 
   // Release the key after a short delay
-  await new Promise(resolve => setTimeout(resolve, 100))
-  
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
   console.log('Simulating KeyA release...')
   simulateEvent({
     eventType: EventTypeValue.KeyRelease,

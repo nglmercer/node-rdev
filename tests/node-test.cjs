@@ -2,7 +2,6 @@
  * Node.js compatible test for platforms where Bun is not available (e.g., ARM32)
  * Uses Node.js built-in test runner (requires Node.js 18+)
  */
-/* eslint-disable */
 const { test } = require('node:test');
 const assert = require('node:assert');
 

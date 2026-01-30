@@ -1,7 +1,6 @@
 /**
  * Comprehensive tests for all KeyCode values and keyboard event functionality
  */
-/* eslint-disable */
 const { test, describe } = require('node:test');
 const assert = require('node:assert');
 const rdev = require('../index.js');

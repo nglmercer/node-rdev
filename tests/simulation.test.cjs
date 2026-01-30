@@ -2,7 +2,6 @@
  * Integration tests for simulateEvent and event listening functionality
  * Tests actual simulation capabilities (may be limited in CI environments)
  */
-/* eslint-disable */
 const { test, describe } = require('node:test');
 const assert = require('node:assert');
 const rdev = require('../index.js');
